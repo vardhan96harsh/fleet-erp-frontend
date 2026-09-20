@@ -9,6 +9,7 @@ import { EmptyState } from "../components/ui/EmptyState.jsx";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog.jsx";
 import { VehicleModal } from "../components/vehicles/VehicleModal.jsx";
 import { worstVehicleStatus, daysUntil, fmtD } from "../utils/dates.js";
+import { formatVehicleStatus, getVehicleStatusBadgeVariant } from "../utils/formatters.js";
 import { Plus, Truck, Edit3, Trash2 } from "lucide-react";
 
 export const VehiclesPage = ({ preOpenId }) => {
@@ -266,20 +267,8 @@ export const VehiclesPage = ({ preOpenId }) => {
                         )}
                       </td>
                       <td>
-                        <Badge
-                          variant={
-                            v.status === "ACTIVE"
-                              ? "ok"
-                              : v.status === "UNDER_SERVICE"
-                              ? "warn"
-                              : "neutral"
-                          }
-                        >
-                          {v.status === "UNDER_SERVICE"
-                            ? "Service"
-                            : v.status === "ACTIVE"
-                            ? "Active"
-                            : "Inactive"}
+                        <Badge variant={getVehicleStatusBadgeVariant(v.status)}>
+                          {formatVehicleStatus(v.status)}
                         </Badge>
                       </td>
                       <td>

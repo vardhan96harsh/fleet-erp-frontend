@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FullScreenModal from "../ui/FullScreenModal.jsx";
 import Badge from "../ui/Badge.jsx";
 import { daysUntil, docBadgeStatus } from "../../utils/dates.js";
+import { formatVehicleStatus } from "../../utils/formatters.js";
 import {
   Trash2,
   Save,
@@ -337,7 +338,7 @@ export const DriverModal = ({
                   <option value="">No Vehicle Assigned (Floating Pool)</option>
                   {vehicleList.map((v) => (
                     <option key={v._id} value={v._id}>
-                      {v.vehicleNo} {v.type ? `— ${v.type}` : ""} ({v.status})
+                      {v.vehicleNo} {v.type ? `— ${v.type}` : ""} ({formatVehicleStatus(v.status)})
                     </option>
                   ))}
                 </select>

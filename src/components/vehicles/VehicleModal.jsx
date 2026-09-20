@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FullScreenModal from "../ui/FullScreenModal.jsx";
 import Badge from "../ui/Badge.jsx";
 import { daysUntil, docBadgeStatus, fmtD } from "../../utils/dates.js";
+import { formatVehicleStatus, getVehicleStatusBadgeVariant } from "../../utils/formatters.js";
 import {
   Plus,
   Trash2,
@@ -166,8 +167,8 @@ export const VehicleModal = ({
     {
       id: "details",
       label: "General Specifications",
-      badge: formData.status === "ACTIVE" ? "Active" : formData.status,
-      badgeVariant: formData.status === "ACTIVE" ? "ok" : "warn",
+      badge: formatVehicleStatus(formData.status),
+      badgeVariant: getVehicleStatusBadgeVariant(formData.status),
     },
     {
       id: "ownership",
@@ -234,8 +235,8 @@ export const VehicleModal = ({
       subtitle={isEdit ? "Specifications, compliance certificates & logs" : "Register commercial vehicle"}
       breadcrumbs="Vehicles"
       badge={
-        <Badge variant={formData.status === "ACTIVE" ? "ok" : "warn"}>
-          {formData.status}
+        <Badge variant={getVehicleStatusBadgeVariant(formData.status)}>
+          {formatVehicleStatus(formData.status)}
         </Badge>
       }
       menuItems={menuItems}
@@ -304,6 +305,7 @@ export const VehicleModal = ({
                     className="input-field font-semibold text-[13px]"
                   >
                     <option value="ACTIVE">Active (Available for Dispatch)</option>
+                    <option value="DRIVER_NOT_AVAILABLE">Driver Not Available</option>
                     <option value="UNDER_SERVICE">Under Service (In Workshop)</option>
                     <option value="INACTIVE">Inactive (Standby / Grounded)</option>
                   </select>
