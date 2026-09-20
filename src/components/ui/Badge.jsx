@@ -6,6 +6,7 @@ export const Badge = ({ variant = "neutral", children, className = "" }) => {
     warn: "badge-warn",
     bad: "badge-bad",
     neutral: "badge-neutral",
+    info: "badge-info",
   };
 
   const selected = map[variant] || map.neutral;

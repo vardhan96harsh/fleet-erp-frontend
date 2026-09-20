@@ -158,7 +158,8 @@ export const AttendancePage = () => {
 
     const cycle = {
       UNMARKED: "PRESENT",
-      PRESENT: "ABSENT",
+      PRESENT: "HALF_DAY",
+      HALF_DAY: "ABSENT",
       ABSENT: "LEAVE",
       LEAVE: "UNMARKED",
     };
@@ -179,9 +180,10 @@ export const AttendancePage = () => {
         }
 
         // Recalculate summary
-        let p = 0, a = 0, l = 0;
+        let p = 0, hd = 0, a = 0, l = 0;
         Object.values(newDays).forEach((v) => {
           if (v.status === "PRESENT") p++;
+          else if (v.status === "HALF_DAY") hd++;
           else if (v.status === "ABSENT") a++;
           else if (v.status === "LEAVE") l++;
         });
@@ -189,7 +191,7 @@ export const AttendancePage = () => {
         return {
           ...d,
           days: newDays,
-          summary: { present: p, absent: a, leave: l },
+          summary: { present: p, halfDay: hd, absent: a, leave: l },
         };
       })
     );
@@ -220,6 +222,7 @@ export const AttendancePage = () => {
 
       if (statusFilter === "all") return true;
       if (statusFilter === "present") return r.status === "PRESENT";
+      if (statusFilter === "half_day" || statusFilter === "halfday") return r.status === "HALF_DAY";
       if (statusFilter === "absent") return r.status === "ABSENT";
       if (statusFilter === "leave") return r.status === "LEAVE";
       if (statusFilter === "unmarked") return r.status === "UNMARKED" || !r.status;
@@ -230,12 +233,14 @@ export const AttendancePage = () => {
   // Counts for Daily Roster
   const dailyCounts = useMemo(() => {
     let present = 0;
+    let halfDay = 0;
     let absent = 0;
     let leave = 0;
     let unmarked = 0;
 
     dailyData.forEach((r) => {
       if (r.status === "PRESENT") present++;
+      else if (r.status === "HALF_DAY") halfDay++;
       else if (r.status === "ABSENT") absent++;
       else if (r.status === "LEAVE") leave++;
       else unmarked++;
@@ -244,6 +249,7 @@ export const AttendancePage = () => {
     return {
       total: dailyData.length,
       present,
+      halfDay,
       absent,
       leave,
       unmarked,
@@ -376,7 +382,7 @@ export const AttendancePage = () => {
 
       {/* KPI Stats in Daily Mode */}
       {viewMode === "daily" && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           <StatCard
             label="Total Drivers"
             value={dailyCounts.total}
@@ -389,6 +395,13 @@ export const AttendancePage = () => {
             variant="teal"
             icon={CheckCircle2}
             onClick={() => setStatusFilter("present")}
+          />
+          <StatCard
+            label="Half Day (HD)"
+            value={dailyCounts.halfDay}
+            variant="default"
+            icon={Clock}
+            onClick={() => setStatusFilter("half_day")}
           />
           <StatCard
             label="Absent (A)"
@@ -440,6 +453,13 @@ export const AttendancePage = () => {
               Present
             </FilterChip>
             <FilterChip
+              active={statusFilter === "half_day"}
+              onClick={() => setStatusFilter("half_day")}
+              count={dailyCounts.halfDay}
+            >
+              Half Day
+            </FilterChip>
+            <FilterChip
               active={statusFilter === "absent"}
               onClick={() => setStatusFilter("absent")}
               count={dailyCounts.absent}
@@ -488,13 +508,14 @@ export const AttendancePage = () => {
                     <th>Driver Name</th>
                     <th>Assigned Vehicle</th>
                     <th>Mobile</th>
-                    <th className="w-32">Current Status</th>
-                    <th className="w-56 text-right">Attendance Action</th>
+                    <th className="w-36">Current Status</th>
+                    <th className="w-64 text-right">Attendance Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredDaily.map((row) => {
                     const isP = row.status === "PRESENT";
+                    const isHD = row.status === "HALF_DAY";
                     const isA = row.status === "ABSENT";
                     const isL = row.status === "LEAVE";
                     const isUnmarked = !row.status || row.status === "UNMARKED";
@@ -521,6 +542,8 @@ export const AttendancePage = () => {
                         <td>
                           {isP ? (
                             <Badge variant="ok">Present (P)</Badge>
+                          ) : isHD ? (
+                            <Badge variant="info">Half Day (HD)</Badge>
                           ) : isA ? (
                             <Badge variant="bad">Absent (A)</Badge>
                           ) : isL ? (
@@ -532,12 +555,12 @@ export const AttendancePage = () => {
                           )}
                         </td>
                         <td className="text-right">
-                          <div className="inline-flex items-center gap-1.5 bg-paper-subtle p-1 rounded-lg border border-line">
+                          <div className="inline-flex items-center gap-1 bg-paper-subtle p-1 rounded-lg border border-line">
                             <button
                               type="button"
                               onClick={() => handleMarkDaily(row.driverId, "PRESENT")}
                               title="Mark Present"
-                              className={`px-3 py-1 rounded text-[12px] font-bold transition-all ${
+                              className={`px-2.5 py-1 rounded text-[11.5px] font-bold transition-all ${
                                 isP
                                   ? "bg-teal text-white shadow-sm font-extrabold"
                                   : "text-slate hover:text-teal hover:bg-teal-soft/40"
@@ -547,9 +570,21 @@ export const AttendancePage = () => {
                             </button>
                             <button
                               type="button"
+                              onClick={() => handleMarkDaily(row.driverId, "HALF_DAY")}
+                              title="Mark Half Day"
+                              className={`px-2.5 py-1 rounded text-[11.5px] font-bold transition-all ${
+                                isHD
+                                  ? "bg-sky-600 text-white shadow-sm font-extrabold"
+                                  : "text-slate hover:text-sky-600 hover:bg-sky-100"
+                              }`}
+                            >
+                              HD
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleMarkDaily(row.driverId, "ABSENT")}
                               title="Mark Absent"
-                              className={`px-3 py-1 rounded text-[12px] font-bold transition-all ${
+                              className={`px-2.5 py-1 rounded text-[11.5px] font-bold transition-all ${
                                 isA
                                   ? "bg-rust text-white shadow-sm font-extrabold"
                                   : "text-slate hover:text-rust hover:bg-rust-soft/40"
@@ -561,7 +596,7 @@ export const AttendancePage = () => {
                               type="button"
                               onClick={() => handleMarkDaily(row.driverId, "LEAVE")}
                               title="Mark Leave"
-                              className={`px-3 py-1 rounded text-[12px] font-bold transition-all ${
+                              className={`px-2.5 py-1 rounded text-[11.5px] font-bold transition-all ${
                                 isL
                                   ? "bg-amber text-white shadow-sm font-extrabold"
                                   : "text-slate hover:text-amber hover:bg-amber-soft/40"
@@ -574,7 +609,7 @@ export const AttendancePage = () => {
                                 type="button"
                                 onClick={() => handleMarkDaily(row.driverId, "UNMARKED")}
                                 title="Clear Attendance"
-                                className="px-2 py-1 rounded text-[11px] text-slate-soft hover:text-ink hover:bg-paper-muted"
+                                className="px-1.5 py-1 rounded text-[11px] text-slate-soft hover:text-ink hover:bg-paper-muted"
                               >
                                 Clear
                               </button>
@@ -598,12 +633,16 @@ export const AttendancePage = () => {
             <span>
               Click any calendar cell to toggle:{" "}
               <strong className="text-teal">Present (P)</strong> →{" "}
+              <strong className="text-sky-600">Half Day (HD)</strong> →{" "}
               <strong className="text-rust">Absent (A)</strong> →{" "}
               <strong className="text-amber">Leave (L)</strong> → Clear
             </span>
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded bg-teal inline-block" /> P: Present
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded bg-sky-600 inline-block" /> HD: Half Day
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded bg-rust inline-block" /> A: Absent
@@ -650,14 +689,15 @@ export const AttendancePage = () => {
                         </th>
                       );
                     })}
-                    <th className="text-center w-12 text-teal font-bold">P</th>
-                    <th className="text-center w-12 text-rust font-bold">A</th>
-                    <th className="text-center w-12 text-amber font-bold">L</th>
+                    <th className="text-center w-10 text-teal font-bold" title="Present">P</th>
+                    <th className="text-center w-10 text-sky-600 font-bold" title="Half Day">HD</th>
+                    <th className="text-center w-10 text-rust font-bold" title="Absent">A</th>
+                    <th className="text-center w-10 text-amber font-bold" title="Leave">L</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMonthly.map((d) => {
-                    const sum = d.summary || { present: 0, absent: 0, leave: 0 };
+                    const sum = d.summary || { present: 0, halfDay: 0, absent: 0, leave: 0 };
 
                     return (
                       <tr key={d.driverId} className="hover:bg-paper-subtle/40">
@@ -675,6 +715,8 @@ export const AttendancePage = () => {
                           const cellStyle =
                             val === "PRESENT"
                               ? "bg-teal text-white font-bold"
+                              : val === "HALF_DAY"
+                              ? "bg-sky-600 text-white font-bold"
                               : val === "ABSENT"
                               ? "bg-rust text-white font-bold"
                               : val === "LEAVE"
@@ -691,21 +733,24 @@ export const AttendancePage = () => {
                                 type="button"
                                 onClick={() => handleCycleMonthlyCell(d.driverId, day)}
                                 title={`Day ${day}: ${val || "Unmarked"}`}
-                                className={`w-7 h-7 rounded text-[11px] font-mono transition-all mx-auto flex items-center justify-center ${cellStyle}`}
+                                className={`w-7 h-7 rounded text-[10px] font-mono transition-all mx-auto flex items-center justify-center ${cellStyle}`}
                               >
-                                {val === "PRESENT" ? "P" : val === "ABSENT" ? "A" : val === "LEAVE" ? "L" : "·"}
+                                {val === "PRESENT" ? "P" : val === "HALF_DAY" ? "HD" : val === "ABSENT" ? "A" : val === "LEAVE" ? "L" : "·"}
                               </button>
                             </td>
                           );
                         })}
 
-                        <td className="text-center font-mono font-bold text-teal text-[12.5px] bg-teal-soft/10">
+                        <td className="text-center font-mono font-bold text-teal text-[12px] bg-teal-soft/10">
                           {sum.present}
                         </td>
-                        <td className="text-center font-mono font-bold text-rust text-[12.5px] bg-rust-soft/10">
+                        <td className="text-center font-mono font-bold text-sky-600 text-[12px] bg-sky-50">
+                          {sum.halfDay || 0}
+                        </td>
+                        <td className="text-center font-mono font-bold text-rust text-[12px] bg-rust-soft/10">
                           {sum.absent}
                         </td>
-                        <td className="text-center font-mono font-bold text-amber text-[12.5px] bg-amber-soft/10">
+                        <td className="text-center font-mono font-bold text-amber text-[12px] bg-amber-soft/10">
                           {sum.leave}
                         </td>
                       </tr>

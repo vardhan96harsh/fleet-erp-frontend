@@ -13,6 +13,11 @@ import {
   FileCheck2,
   PackageCheck,
   ArrowUpRight,
+  CalendarCheck,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  UserCheck,
 } from "lucide-react";
 
 export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
@@ -57,6 +62,7 @@ export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
   const attentionDocs = data?.documentsNeedingAttention || [];
   const lowStock = data?.lowStockItems || [];
   const recent = data?.recent || {};
+  const attendanceToday = data?.attendanceToday || {};
 
   return (
     <div className="space-y-6">
@@ -67,10 +73,17 @@ export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
             Welcome back, {user?.name || "Operator"}
           </h2>
           <p className="text-[12.5px] text-slate mt-0.5">
-            Overview of fleet operational compliance and warehouse inventory levels.
+            Real-time fleet operations, driver attendance, and inventory status.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => onNavigate("attendance")}
+            className="btn btn-sm btn-primary"
+          >
+            <CalendarCheck className="w-3.5 h-3.5" />
+            <span>Attendance</span>
+          </button>
           <button
             onClick={() => onNavigate("vehicles")}
             className="btn btn-sm"
@@ -103,10 +116,18 @@ export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
           onClick={() => onNavigate("drivers")}
         />
         <StatCard
-          label="Inventory SKUs"
-          value={totals.inventoryItems || 0}
-          icon={Package}
-          onClick={() => onNavigate("inventory")}
+          label="Present Today"
+          value={attendanceToday.present || 0}
+          variant="teal"
+          icon={CheckCircle2}
+          onClick={() => onNavigate("attendance")}
+        />
+        <StatCard
+          label="Half Day (HD)"
+          value={attendanceToday.halfDay || 0}
+          variant="default"
+          icon={Clock}
+          onClick={() => onNavigate("attendance")}
         />
         <StatCard
           label="Expiring ≤30d"
@@ -118,19 +139,119 @@ export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
           onClick={() => onNavigate("vehicles")}
         />
         <StatCard
-          label="Expired Docs"
-          value={totals.vehiclesWithExpiredDocuments || 0}
-          variant={totals.vehiclesWithExpiredDocuments > 0 ? "bad" : "default"}
-          icon={AlertTriangle}
-          onClick={() => onNavigate("vehicles")}
-        />
-        <StatCard
           label="Low Stock Alert"
           value={totals.lowStockItems || 0}
           variant={totals.lowStockItems > 0 ? "bad" : "default"}
           icon={PackageCheck}
           onClick={() => onNavigate("inventory")}
         />
+      </div>
+
+      {/* Attendance Today Section */}
+      <div className="panel p-5 bg-paper-raised">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-line">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-teal-soft/80 flex items-center justify-center text-teal">
+              <CalendarCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-ink m-0 flex items-center gap-2">
+                <span>Today's Driver Attendance</span>
+                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-paper-subtle border border-line text-slate">
+                  {attendanceToday.date || new Date().toISOString().slice(0, 10)}
+                </span>
+              </h3>
+              <p className="text-[12px] text-slate mt-0.5">
+                Real-time daily roster status across all active drivers
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate("attendance")}
+            className="btn btn-sm btn-primary whitespace-nowrap self-start sm:self-auto"
+          >
+            <span>Open Attendance Register</span>
+            <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
+          </button>
+        </div>
+
+        {/* Status Metrics Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4">
+          <div
+            onClick={() => onNavigate("attendance")}
+            className="p-3 rounded-lg bg-teal-soft/40 border border-teal/20 cursor-pointer hover:bg-teal-soft/60 transition-colors"
+          >
+            <div className="text-[11px] font-semibold text-teal uppercase tracking-wider">Present</div>
+            <div className="text-xl font-bold font-mono text-teal mt-0.5">{attendanceToday.present || 0}</div>
+            <div className="text-[11px] text-teal/80 mt-0.5">Full Day On Duty</div>
+          </div>
+
+          <div
+            onClick={() => onNavigate("attendance")}
+            className="p-3 rounded-lg bg-sky-50 border border-sky-200 cursor-pointer hover:bg-sky-100 transition-colors"
+          >
+            <div className="text-[11px] font-semibold text-sky-700 uppercase tracking-wider">Half Day</div>
+            <div className="text-xl font-bold font-mono text-sky-700 mt-0.5">{attendanceToday.halfDay || 0}</div>
+            <div className="text-[11px] text-sky-600 mt-0.5">Half Shift Marked</div>
+          </div>
+
+          <div
+            onClick={() => onNavigate("attendance")}
+            className="p-3 rounded-lg bg-rust-soft/40 border border-rust/20 cursor-pointer hover:bg-rust-soft/60 transition-colors"
+          >
+            <div className="text-[11px] font-semibold text-rust uppercase tracking-wider">Absent</div>
+            <div className="text-xl font-bold font-mono text-rust mt-0.5">{attendanceToday.absent || 0}</div>
+            <div className="text-[11px] text-rust/80 mt-0.5">Unexcused Absence</div>
+          </div>
+
+          <div
+            onClick={() => onNavigate("attendance")}
+            className="p-3 rounded-lg bg-amber-soft/40 border border-amber/20 cursor-pointer hover:bg-amber-soft/60 transition-colors"
+          >
+            <div className="text-[11px] font-semibold text-amber uppercase tracking-wider">On Leave</div>
+            <div className="text-xl font-bold font-mono text-amber mt-0.5">{attendanceToday.leave || 0}</div>
+            <div className="text-[11px] text-amber/80 mt-0.5">Approved Leave</div>
+          </div>
+
+          <div
+            onClick={() => onNavigate("attendance")}
+            className="p-3 rounded-lg bg-paper-subtle border border-line cursor-pointer hover:bg-paper-muted transition-colors col-span-2 sm:col-span-1"
+          >
+            <div className="text-[11px] font-semibold text-slate uppercase tracking-wider">Unmarked</div>
+            <div className="text-xl font-bold font-mono text-slate-800 mt-0.5">{attendanceToday.unmarked || 0}</div>
+            <div className="text-[11px] text-slate-soft mt-0.5">Pending Action</div>
+          </div>
+        </div>
+
+        {/* Quick Driver Status List (if available) */}
+        {attendanceToday.records && attendanceToday.records.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-line/60">
+            <div className="text-[11.5px] font-semibold text-slate uppercase tracking-wider mb-2">
+              Recent Driver Updates Today
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {attendanceToday.records.map((r, idx) => (
+                <div
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-paper-subtle border border-line text-xs"
+                >
+                  <span className="font-medium text-ink">{r.name}</span>
+                  {r.status === "PRESENT" ? (
+                    <Badge variant="ok" className="text-[10px] py-0 px-1.5">Present</Badge>
+                  ) : r.status === "HALF_DAY" ? (
+                    <Badge variant="info" className="text-[10px] py-0 px-1.5">Half Day</Badge>
+                  ) : r.status === "ABSENT" ? (
+                    <Badge variant="bad" className="text-[10px] py-0 px-1.5">Absent</Badge>
+                  ) : r.status === "LEAVE" ? (
+                    <Badge variant="warn" className="text-[10px] py-0 px-1.5">Leave</Badge>
+                  ) : (
+                    <span className="text-[10px] text-slate">Unmarked</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Two Column Section: Compliance Attention & Low Stock */}
