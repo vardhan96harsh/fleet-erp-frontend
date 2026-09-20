@@ -38,7 +38,12 @@ export const VehicleModal = ({
   });
 
   const [newService, setNewService] = useState({ date: "", description: "" });
-  const [newAccident, setNewAccident] = useState({ date: "", description: "" });
+  const [newAccident, setNewAccident] = useState({
+    date: "",
+    description: "",
+    driverName: "",
+    driverMobile: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -116,11 +121,21 @@ export const VehicleModal = ({
     setFormData((prev) => ({
       ...prev,
       accidentReports: [
-        { date: newAccident.date, description: newAccident.description.trim() },
+        {
+          date: newAccident.date,
+          description: newAccident.description.trim(),
+          driverName: (newAccident.driverName || "").trim(),
+          driverMobile: (newAccident.driverMobile || "").trim(),
+        },
         ...prev.accidentReports,
       ],
     }));
-    setNewAccident({ date: "", description: "" });
+    setNewAccident({
+      date: "",
+      description: "",
+      driverName: "",
+      driverMobile: "",
+    });
   };
 
   const handleRemoveAccident = (index) => {
@@ -618,9 +633,9 @@ export const VehicleModal = ({
 
               {/* Add New Incident Row */}
               <div className="p-3.5 bg-rust-soft/20 border border-rust-soft rounded-xl space-y-3 mb-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div>
-                    <label className="label">Incident Date</label>
+                    <label className="label">Incident Date *</label>
                     <input
                       type="date"
                       value={newAccident.date}
@@ -630,11 +645,35 @@ export const VehicleModal = ({
                       className="input-field bg-white py-1.5 text-[13px]"
                     />
                   </div>
-                  <div className="sm:col-span-2">
-                    <label className="label">Incident Description & Damage</label>
+                  <div>
+                    <label className="label">Driver Name</label>
                     <input
                       type="text"
-                      placeholder="Incident description"
+                      placeholder="e.g. Ramesh Singh"
+                      value={newAccident.driverName}
+                      onChange={(e) =>
+                        setNewAccident((p) => ({ ...p, driverName: e.target.value }))
+                      }
+                      className="input-field bg-white text-[13px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Mobile Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 9876543210"
+                      value={newAccident.driverMobile}
+                      onChange={(e) =>
+                        setNewAccident((p) => ({ ...p, driverMobile: e.target.value }))
+                      }
+                      className="input-field bg-white font-mono text-[13px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Incident & Damage *</label>
+                    <input
+                      type="text"
+                      placeholder="Details / damage description"
                       value={newAccident.description}
                       onChange={(e) =>
                         setNewAccident((p) => ({
@@ -670,17 +709,33 @@ export const VehicleModal = ({
                       key={idx}
                       className="flex items-center justify-between p-3 bg-rust-soft/10 border border-rust-soft/60 rounded-lg text-[13px] hover:border-rust transition-colors"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-[11.5px] font-bold text-rust px-2 py-0.5 rounded bg-rust-soft/50 border border-rust/30">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1 min-w-0">
+                        <span className="font-mono text-[11.5px] font-bold text-rust px-2 py-0.5 rounded bg-rust-soft/50 border border-rust/30 shrink-0 self-start sm:self-auto">
                           {fmtD(a.date)}
                         </span>
-                        <span className="font-medium text-ink">{a.description}</span>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-medium text-ink block">{a.description}</span>
+                          {(a.driverName || a.driverMobile) && (
+                            <div className="text-[11.5px] text-slate mt-0.5 flex items-center gap-2 flex-wrap">
+                              {a.driverName && (
+                                <span>
+                                  <strong className="text-slate-800">Driver:</strong> {a.driverName}
+                                </span>
+                              )}
+                              {a.driverMobile && (
+                                <span className="font-mono text-slate-soft">
+                                  ({a.driverMobile})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveAccident(idx)}
                         aria-label="Remove incident"
-                        className="text-slate-soft hover:text-rust p-1 rounded hover:bg-rust-soft/30 transition-colors"
+                        className="text-slate-soft hover:text-rust p-1 rounded hover:bg-rust-soft/30 transition-colors shrink-0 ml-2"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
