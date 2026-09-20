@@ -106,6 +106,9 @@ export const LoginPage = () => {
           <p className="text-[11.5px] text-slate m-0 leading-relaxed">
             Enterprise RBAC System • Super Admin & Sub Admin Access
           </p>
+          <p className="text-[11px] text-slate/70 mt-2 m-0">
+            &copy; {new Date().getFullYear()} Fleet ERP • Developed by Harshvardhan
+          </p>
         </div>
       </div>
     </div>
