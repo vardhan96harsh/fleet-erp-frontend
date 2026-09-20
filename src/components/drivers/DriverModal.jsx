@@ -20,6 +20,8 @@ export const DriverModal = ({
   const [activeSection, setActiveSection] = useState("personal");
   const [formData, setFormData] = useState({
     name: "",
+    driverId: "",
+    fatherName: "",
     mobile: "",
     licenceNo: "",
     licenceExpiry: "",
@@ -37,6 +39,8 @@ export const DriverModal = ({
     if (driver) {
       setFormData({
         name: driver.name || "",
+        driverId: driver.driverId || "",
+        fatherName: driver.fatherName || "",
         mobile: driver.mobile || "",
         licenceNo: driver.licenceNo || "",
         licenceExpiry: driver.licenceExpiry
@@ -51,6 +55,8 @@ export const DriverModal = ({
     } else {
       setFormData({
         name: "",
+        driverId: "",
+        fatherName: "",
         mobile: "",
         licenceNo: "",
         licenceExpiry: "",
@@ -197,9 +203,33 @@ export const DriverModal = ({
                   <input
                     type="text"
                     required
-                    placeholder="Driver Name"
+                    placeholder="e.g. Ramesh Kumar"
                     value={formData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
+                    className="input-field text-[13.5px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Driver ID / Badge No</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. DRV-101"
+                    value={formData.driverId}
+                    onChange={(e) => handleChange("driverId", e.target.value)}
+                    className="input-field font-mono uppercase text-[13.5px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">
+                    Father's Name <span className="text-slate-soft text-[11px] font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Suresh Kumar"
+                    value={formData.fatherName}
+                    onChange={(e) => handleChange("fatherName", e.target.value)}
                     className="input-field text-[13.5px]"
                   />
                 </div>

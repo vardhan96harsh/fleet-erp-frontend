@@ -47,6 +47,8 @@ export const DriversPage = () => {
       if (!q) return true;
       return (
         (d.name || "").toLowerCase().includes(q) ||
+        (d.driverId || "").toLowerCase().includes(q) ||
+        (d.fatherName || "").toLowerCase().includes(q) ||
         (d.mobile || "").toLowerCase().includes(q) ||
         (d.licenceNo || "").toLowerCase().includes(q) ||
         (d.assignedVehicle?.vehicleNo || "").toLowerCase().includes(q)
@@ -163,11 +165,19 @@ export const DriversPage = () => {
                         >
                           {d.name}
                         </button>
-                        {d.joiningDate && (
-                          <span className="text-[11px] text-slate">
-                            Joined {fmtD(d.joiningDate)}
-                          </span>
-                        )}
+                        <div className="text-[11px] text-slate flex items-center gap-1.5 flex-wrap mt-0.5">
+                          {d.driverId && (
+                            <span className="font-mono font-semibold text-slate-800 bg-paper-subtle px-1 rounded border border-line/60">
+                              ID: {d.driverId}
+                            </span>
+                          )}
+                          {d.fatherName && (
+                            <span>• S/o {d.fatherName}</span>
+                          )}
+                          {d.joiningDate && (
+                            <span>• Joined {fmtD(d.joiningDate)}</span>
+                          )}
+                        </div>
                       </td>
                       <td className="font-mono">{d.mobile || "—"}</td>
                       <td className="font-mono uppercase">{d.licenceNo || "—"}</td>
