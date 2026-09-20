@@ -1,9 +1,14 @@
 import axios from "axios";
 
 let accessToken = localStorage.getItem("fleet_access_token") || null;
+let refreshToken = localStorage.getItem("fleet_refresh_token") || null;
 
-export const setAccessToken = (token, user = null) => {
+export const setAccessToken = (token, user = null, newRefreshToken = null) => {
   accessToken = token;
+  if (newRefreshToken !== undefined && newRefreshToken !== null) {
+    refreshToken = newRefreshToken;
+    localStorage.setItem("fleet_refresh_token", newRefreshToken);
+  }
   if (token) {
     localStorage.setItem("fleet_access_token", token);
     if (user) {
@@ -11,7 +16,9 @@ export const setAccessToken = (token, user = null) => {
     }
   } else {
     localStorage.removeItem("fleet_access_token");
+    localStorage.removeItem("fleet_refresh_token");
     localStorage.removeItem("fleet_user");
+    refreshToken = null;
   }
 };
 
@@ -25,8 +32,10 @@ export const getCachedUser = () => {
 };
 
 export const getAccessToken = () => accessToken;
+export const getRefreshToken = () =>
+  refreshToken || localStorage.getItem("fleet_refresh_token");
 
-const getBaseURL = () => {
+export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
   if (!envUrl) return "/api/v1";
   const cleaned = envUrl.replace(/\/+$/, "");
@@ -96,16 +105,18 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const storedRefreshToken = getRefreshToken();
         const response = await axios.post(
-          "/api/v1/auth/refresh",
-          {},
-          { withCredentials: true, timeout: 8000 }
+          `${getBaseURL()}/auth/refresh`,
+          { refreshToken: storedRefreshToken },
+          { withCredentials: true, timeout: 10000 }
         );
 
         const newAccessToken = response.data?.data?.accessToken;
+        const newRefreshToken = response.data?.data?.refreshToken;
         const newUser = response.data?.data?.user;
         if (newAccessToken) {
-          setAccessToken(newAccessToken, newUser);
+          setAccessToken(newAccessToken, newUser, newRefreshToken);
           processQueue(null, newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return api(originalRequest);

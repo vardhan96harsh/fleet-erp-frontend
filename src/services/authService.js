@@ -1,16 +1,16 @@
-import api, { setAccessToken } from "./api.js";
+import api, { setAccessToken, getRefreshToken } from "./api.js";
 
 export const authService = {
   async login(username, password) {
     const res = await api.post("/auth/login", { username, password });
-    const { user, accessToken } = res.data.data;
-    setAccessToken(accessToken);
-    return { user, accessToken };
+    const { user, accessToken, refreshToken } = res.data.data;
+    setAccessToken(accessToken, user, refreshToken);
+    return { user, accessToken, refreshToken };
   },
 
   async logout() {
     try {
-      await api.post("/auth/logout");
+      await api.post("/auth/logout", { refreshToken: getRefreshToken() });
     } finally {
       setAccessToken(null);
     }
