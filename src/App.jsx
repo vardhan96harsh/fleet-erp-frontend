@@ -72,7 +72,7 @@ const AppContent = () => {
     },
     inventory: {
       title: "Warehouse & Spare Inventory",
-      subtitle: "Track parts and consumables across Location A and Location B",
+      subtitle: "Track parts and consumables across Vidisha and Manawar warehouses",
       component: <InventoryPage />,
     },
     attendance: {

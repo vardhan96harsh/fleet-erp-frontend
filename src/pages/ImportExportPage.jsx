@@ -143,7 +143,7 @@ export const ImportExportPage = () => {
           >
             <Package className="w-4 h-4 text-amber shrink-0" />
             <div className="truncate">
-              <div className="font-medium text-ink">Inventory (Loc A)</div>
+              <div className="font-medium text-ink">Inventory (Vidisha)</div>
               <span className="text-[11px] text-slate font-mono">.xlsx</span>
             </div>
           </button>
@@ -154,7 +154,7 @@ export const ImportExportPage = () => {
           >
             <Package className="w-4 h-4 text-teal shrink-0" />
             <div className="truncate">
-              <div className="font-medium text-ink">Inventory (Loc B)</div>
+              <div className="font-medium text-ink">Inventory (Manawar)</div>
               <span className="text-[11px] text-slate font-mono">.xlsx</span>
             </div>
           </button>
@@ -234,13 +234,13 @@ export const ImportExportPage = () => {
                 <span>Import Inventory</span>
               </div>
               <p className="text-[12px] text-slate m-0">
-                Load warehouse SKUs into Location A or B.
+                Load warehouse SKUs into Vidisha or Manawar.
               </p>
             </div>
             <div className="flex items-center gap-2 mt-3">
               <label className="btn btn-sm flex-1 cursor-pointer justify-center">
                 <Upload className="w-3 h-3 text-amber" />
-                <span>Loc A</span>
+                <span>Vidisha</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -253,7 +253,7 @@ export const ImportExportPage = () => {
               </label>
               <label className="btn btn-sm flex-1 cursor-pointer justify-center">
                 <Upload className="w-3 h-3 text-teal" />
-                <span>Loc B</span>
+                <span>Manawar</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -315,7 +315,7 @@ export const ImportExportPage = () => {
             className="btn"
           >
             <Download className="w-4 h-4 text-amber" />
-            <span>Export Loc A (.xlsx)</span>
+            <span>Export Vidisha (.xlsx)</span>
           </button>
 
           <button
@@ -323,7 +323,7 @@ export const ImportExportPage = () => {
             className="btn"
           >
             <Download className="w-4 h-4 text-teal" />
-            <span>Export Loc B (.xlsx)</span>
+            <span>Export Manawar (.xlsx)</span>
           </button>
         </div>
       </div>

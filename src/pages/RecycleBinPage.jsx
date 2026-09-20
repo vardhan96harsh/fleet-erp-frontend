@@ -5,7 +5,8 @@ import { inventoryService } from "../services/inventoryService.js";
 import { useToast } from "../context/ToastContext.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
 import { fmtDT } from "../utils/dates.js";
-import { Trash2, RotateCcw, Truck, Users, Package } from "lucide-react";
+import { Trash2, RotateCcw, Truck, Users, Package, MapPin } from "lucide-react";
+import { getInventoryLocationName } from "../constants/inventoryLocations.js";
 
 export const RecycleBinPage = () => {
   const [activeTab, setActiveTab] = useState("vehicles");
@@ -221,16 +222,16 @@ export const RecycleBinPage = () => {
           deletedInventory.length === 0 ? (
             <EmptyState
               icon={Trash2}
-              title="Inventory bin is empty"
-              description="No soft-deleted inventory items on file."
+              title="Product bin is empty"
+              description="No soft-deleted inventory products on file."
             />
           ) : (
             <div className="overflow-x-auto">
               <table className="table-custom">
                 <thead>
                   <tr>
-                    <th>Item Code</th>
-                    <th>Item Name</th>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
                     <th>Location</th>
                     <th>Deleted By</th>
                     <th>Deleted At</th>
@@ -245,8 +246,9 @@ export const RecycleBinPage = () => {
                       </td>
                       <td>{i.itemName}</td>
                       <td>
-                        <span className="font-mono text-[12px]">
-                          {i.location}
+                        <span className="inline-flex items-center gap-1 font-mono text-[11.5px] font-semibold">
+                          <MapPin className="w-3 h-3 text-slate" />
+                          <span>{getInventoryLocationName(i.location)}</span>
                         </span>
                       </td>
                       <td>

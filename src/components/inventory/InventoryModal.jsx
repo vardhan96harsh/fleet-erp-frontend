@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import FullScreenModal from "../ui/FullScreenModal.jsx";
 import Badge from "../ui/Badge.jsx";
-import { Trash2, Save, AlertCircle } from "lucide-react";
+import { Trash2, Save, AlertCircle, MapPin, Sparkles } from "lucide-react";
+import {
+  INVENTORY_LOCATIONS,
+  INVENTORY_LOCATION_NAMES,
+  getInventoryLocationName,
+} from "../../constants/inventoryLocations.js";
 
 // Standard Fleet & Warehouse Unit list
 const INVENTORY_UNITS = [
@@ -16,8 +21,13 @@ const INVENTORY_UNITS = [
   { value: "BOX", label: "BOX — Boxes" },
 ];
 
-// Standard Transport ERP Categories
+// Standard Transport ERP Categories (without Body & Cabin, including Tripal, Safety Gear, Rope, Jack, Wheel Bolt)
 const INVENTORY_CATEGORIES = [
+  { value: "Tripal / Waterproof Tarpaulin", label: "Tripal / Waterproof Tarpaulin", defaultUnit: "PCS" },
+  { value: "Safety Gear", label: "Safety Gear", defaultUnit: "PCS" },
+  { value: "Rope", label: "Rope", defaultUnit: "MTR" },
+  { value: "Jack", label: "Jack", defaultUnit: "PCS" },
+  { value: "Wheel Bolt", label: "Wheel Bolt", defaultUnit: "PCS" },
   { value: "Lubricants & Oils", label: "Lubricants & Oils", defaultUnit: "LTR" },
   { value: "Tires & Tubes", label: "Tires & Tubes", defaultUnit: "PCS" },
   { value: "Filters", label: "Filters", defaultUnit: "PCS" },
@@ -25,9 +35,10 @@ const INVENTORY_CATEGORIES = [
   { value: "Electrical & Battery", label: "Electrical & Battery", defaultUnit: "PCS" },
   { value: "Grease & Chemicals", label: "Grease & Chemicals", defaultUnit: "KG" },
   { value: "Engine & Transmission", label: "Engine & Transmission", defaultUnit: "PCS" },
-  { value: "Body & Cabin", label: "Body & Cabin", defaultUnit: "PAIR" },
   { value: "General Spares", label: "General Spares", defaultUnit: "PCS" },
 ];
+
+const OTHER_CATEGORY_KEY = "OTHER";
 
 export const InventoryModal = ({
   isOpen,
@@ -52,17 +63,35 @@ export const InventoryModal = ({
     status: "ACTIVE",
   });
 
+  const [selectedCategoryType, setSelectedCategoryType] = useState("");
+  const [customCategoryInput, setCustomCategoryInput] = useState("");
+  const [autoCodeEnabled, setAutoCodeEnabled] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isEdit = !!item?._id;
 
+  // Initialize form state
   useEffect(() => {
     if (item) {
+      const existingCategory = item.category || "";
+      const isPredefined = INVENTORY_CATEGORIES.some(
+        (c) => c.value === existingCategory
+      );
+
+      if (existingCategory && !isPredefined) {
+        setSelectedCategoryType(OTHER_CATEGORY_KEY);
+        setCustomCategoryInput(existingCategory);
+      } else {
+        setSelectedCategoryType(existingCategory);
+        setCustomCategoryInput("");
+      }
+
       setFormData({
         itemCode: item.itemCode || "",
         itemName: item.itemName || "",
-        category: item.category || "",
+        category: existingCategory,
         brand: item.brand || "",
         size: item.size || "",
         quantity: item.quantity !== undefined ? item.quantity : 0,
@@ -73,7 +102,10 @@ export const InventoryModal = ({
         remarks: item.remarks || "",
         status: item.status || "ACTIVE",
       });
+      setAutoCodeEnabled(false);
     } else {
+      setSelectedCategoryType("");
+      setCustomCategoryInput("");
       setFormData({
         itemCode: "",
         itemName: "",
@@ -88,31 +120,26 @@ export const InventoryModal = ({
         remarks: "",
         status: "ACTIVE",
       });
+      setAutoCodeEnabled(true);
     }
     setError("");
   }, [item, isOpen, defaultLocation]);
 
+  // Handle standard field changes
   const handleChange = (field, value) => {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value };
 
-      // Smart default: If user selects Lubricants/Oils category, auto-set unit to LTR
-      if (field === "category") {
-        const matched = INVENTORY_CATEGORIES.find((c) => c.value === value);
-        if (matched && matched.defaultUnit) {
-          updated.unit = matched.defaultUnit;
-        }
-      }
-
-      // Smart check on Item Name: if user types 'oil', 'coolant', 'def', 'diesel' and unit was still PCS, suggest LTR
-      if (field === "itemName" && (!prev.category || prev.category === "Lubricants & Oils")) {
-        const lower = String(value).toLowerCase();
-        if (
-          (lower.includes("oil") || lower.includes("coolant") || lower.includes("def") || lower.includes("adblue") || lower.includes("fluid")) &&
-          prev.unit === "PCS"
-        ) {
-          updated.unit = "LTR";
-          if (!prev.category) updated.category = "Lubricants & Oils";
+      // If user types product name and auto SKU generation is enabled on new item
+      if (field === "itemName" && !isEdit && autoCodeEnabled) {
+        const cleanName = String(value)
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .slice(0, 24);
+        if (cleanName) {
+          updated.itemCode = cleanName;
         }
       }
 
@@ -120,10 +147,54 @@ export const InventoryModal = ({
     });
   };
 
+  // Handle category dropdown change (auto sets unit)
+  const handleCategorySelect = (selectedValue) => {
+    setSelectedCategoryType(selectedValue);
+
+    if (selectedValue === OTHER_CATEGORY_KEY) {
+      setFormData((prev) => ({
+        ...prev,
+        category: customCategoryInput.trim(),
+        // Keep current unit or default to PCS for custom category
+        unit: prev.unit || "PCS",
+      }));
+    } else if (selectedValue === "") {
+      setFormData((prev) => ({
+        ...prev,
+        category: "",
+      }));
+    } else {
+      const matched = INVENTORY_CATEGORIES.find((c) => c.value === selectedValue);
+      setFormData((prev) => ({
+        ...prev,
+        category: selectedValue,
+        // Automatically set unit from category configuration
+        unit: matched?.defaultUnit || prev.unit || "PCS",
+      }));
+    }
+  };
+
+  // Handle custom category typing
+  const handleCustomCategoryChange = (val) => {
+    setCustomCategoryInput(val);
+    setFormData((prev) => ({
+      ...prev,
+      category: val,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!formData.itemCode.trim() || !formData.itemName.trim()) {
-      setError("Item Code (SKU) and Item Name are required");
+    if (!formData.itemName.trim()) {
+      setError("Product Name is required");
+      return;
+    }
+    if (!formData.itemCode.trim()) {
+      setError("Product Code (SKU) is required");
+      return;
+    }
+    if (selectedCategoryType === OTHER_CATEGORY_KEY && !customCategoryInput.trim()) {
+      setError("Please enter a Custom Category name");
       return;
     }
 
@@ -133,6 +204,10 @@ export const InventoryModal = ({
     try {
       const payload = {
         ...formData,
+        category:
+          selectedCategoryType === OTHER_CATEGORY_KEY
+            ? customCategoryInput.trim()
+            : formData.category.trim(),
         quantity: Number(formData.quantity) || 0,
         purchaseRate: Number(formData.purchaseRate) || 0,
         minimumStock: Number(formData.minimumStock) || 0,
@@ -141,7 +216,7 @@ export const InventoryModal = ({
       onClose();
     } catch (err) {
       setError(
-        err.response?.data?.message || err.message || "Failed to save inventory item"
+        err.response?.data?.message || err.message || "Failed to save inventory product"
       );
     } finally {
       setLoading(false);
@@ -153,11 +228,10 @@ export const InventoryModal = ({
 
   const totalValue = (Number(formData.quantity) || 0) * (Number(formData.purchaseRate) || 0);
 
-  // Single clean left menu item
   const menuItems = [
     {
       id: "all",
-      label: "Item Overview",
+      label: "Product Overview",
       badge: `${formData.quantity} ${formData.unit}`,
       badgeVariant: isLowStock ? "bad" : "ok",
     },
@@ -170,7 +244,7 @@ export const InventoryModal = ({
           type="button"
           onClick={onDelete}
           className="btn btn-danger"
-          title="Delete inventory item"
+          title="Delete inventory product"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Delete</span>
@@ -191,7 +265,7 @@ export const InventoryModal = ({
         className="btn btn-primary"
       >
         <Save className="w-4 h-4" />
-        <span>{loading ? "Saving..." : isEdit ? "Save Changes" : "Save Item"}</span>
+        <span>{loading ? "Saving..." : isEdit ? "Save Changes" : "Save Product"}</span>
       </button>
     </div>
   );
@@ -200,8 +274,12 @@ export const InventoryModal = ({
     <FullScreenModal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? `Item: ${formData.itemCode}` : "Add Item"}
-      subtitle={isEdit ? "Item specifications & stock" : "Register new inventory item"}
+      title={isEdit ? `Product: ${formData.itemName || formData.itemCode}` : "Add Product"}
+      subtitle={
+        isEdit
+          ? `Stored in ${getInventoryLocationName(formData.location)} warehouse`
+          : "Register new inventory product"
+      }
       breadcrumbs="Inventory"
       badge={
         <Badge variant={formData.status === "ACTIVE" ? "ok" : "warn"}>
@@ -222,52 +300,142 @@ export const InventoryModal = ({
 
       {/* Clean Single-Page Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Section 1: Item Details */}
+        {/* Section 1: Location & Product Selection */}
         <div className="panel panel-pad">
           <div className="flex items-center justify-between pb-3 border-b border-line mb-4">
             <h3 className="text-sm font-bold text-ink uppercase tracking-wider m-0">
-              Item Details
+              Warehouse Location & Product Details
             </h3>
-            <Badge variant="ok">
-              {formData.location === "LOCATION_A" ? "Location A" : "Location B"}
-            </Badge>
+            <span
+              className={`inline-flex items-center gap-1 font-mono text-[12px] font-bold px-2.5 py-0.5 rounded border ${
+                formData.location === "LOCATION_A"
+                  ? "bg-amber-soft/50 text-amber-dark border-amber/40"
+                  : "bg-teal-soft/50 text-teal-dark border-teal/40"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{getInventoryLocationName(formData.location)}</span>
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            {/* 1. FIRST CHOOSE LOCATION */}
             <div>
-              <label className="label">Item Code (SKU) *</label>
-              <input
-                type="text"
-                required
-                placeholder="OIL-15W40"
-                value={formData.itemCode}
-                onChange={(e) => handleChange("itemCode", e.target.value)}
-                className="input-field font-mono uppercase text-[13.5px] font-bold"
-              />
+              <label className="label text-[13px] font-bold text-ink mb-1.5 flex items-center gap-1.5">
+                <span>1. Select Warehouse Location</span>
+                <span className="text-rust">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleChange("location", "LOCATION_A")}
+                  className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    formData.location === "LOCATION_A"
+                      ? "border-amber bg-amber-soft/40 shadow-sm ring-2 ring-amber/50"
+                      : "border-line bg-paper-subtle hover:border-slate/40 hover:bg-paper-raised"
+                  }`}
+                >
+                  <div
+                    className={`p-2.5 rounded-lg transition-colors ${
+                      formData.location === "LOCATION_A"
+                        ? "bg-amber text-white shadow-sm"
+                        : "bg-paper-raised text-slate border border-line"
+                    }`}
+                  >
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-ink text-[14px]">Vidisha</div>
+                    <div className="text-[11.5px] text-slate">
+                      Primary Central Warehouse
+                    </div>
+                  </div>
+                  {formData.location === "LOCATION_A" && (
+                    <Badge variant="ok" className="text-[11px]">
+                      Selected
+                    </Badge>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleChange("location", "LOCATION_B")}
+                  className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    formData.location === "LOCATION_B"
+                      ? "border-teal bg-teal-soft/40 shadow-sm ring-2 ring-teal/50"
+                      : "border-line bg-paper-subtle hover:border-slate/40 hover:bg-paper-raised"
+                  }`}
+                >
+                  <div
+                    className={`p-2.5 rounded-lg transition-colors ${
+                      formData.location === "LOCATION_B"
+                        ? "bg-teal text-white shadow-sm"
+                        : "bg-paper-raised text-slate border border-line"
+                    }`}
+                  >
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-ink text-[14px]">Manawar</div>
+                    <div className="text-[11.5px] text-slate">
+                      Regional Branch Depot
+                    </div>
+                  </div>
+                  {formData.location === "LOCATION_B" && (
+                    <Badge variant="ok" className="text-[11px]">
+                      Selected
+                    </Badge>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="label">Warehouse Location *</label>
-              <select
-                value={formData.location}
-                onChange={(e) => handleChange("location", e.target.value)}
-                className="input-field font-semibold text-[13px]"
-              >
-                <option value="LOCATION_A">Location A</option>
-                <option value="LOCATION_B">Location B</option>
-              </select>
-            </div>
+            {/* 2. THEN PRODUCT NAME & PRODUCT CODE */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="md:col-span-2">
+                <label className="label text-[13px] font-bold text-ink mb-1.5 flex items-center gap-1.5">
+                  <span>2. Product Name</span>
+                  <span className="text-rust">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Waterproof Tarpaulin / Tripal 24x18, Safety Helmet, Hydraulic Jack 20 Ton..."
+                  value={formData.itemName}
+                  onChange={(e) => handleChange("itemName", e.target.value)}
+                  className="input-field text-[14px] font-medium"
+                />
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="label">Item Name *</label>
-              <input
-                type="text"
-                required
-                placeholder="Diesel Engine Oil 15W-40"
-                value={formData.itemName}
-                onChange={(e) => handleChange("itemName", e.target.value)}
-                className="input-field text-[13.5px]"
-              />
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="label text-[13px] font-bold text-ink m-0 flex items-center gap-1.5">
+                    <span>Product Code (SKU)</span>
+                    <span className="text-rust">*</span>
+                  </label>
+                  {!isEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setAutoCodeEnabled((prev) => !prev)}
+                      className="text-[11px] text-slate hover:text-ink font-mono flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3 text-amber" />
+                      <span>{autoCodeEnabled ? "Auto-fill ON" : "Manual"}</span>
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. TRP-24X18, JCK-20T"
+                  value={formData.itemCode}
+                  onChange={(e) => {
+                    setAutoCodeEnabled(false);
+                    handleChange("itemCode", e.target.value);
+                  }}
+                  className="input-field font-mono uppercase text-[13.5px] font-bold"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -276,7 +444,7 @@ export const InventoryModal = ({
         <div className="panel panel-pad">
           <div className="pb-3 border-b border-line mb-4">
             <h3 className="text-sm font-bold text-ink uppercase tracking-wider m-0">
-              Classification
+              Product Classification
             </h3>
           </div>
 
@@ -284,40 +452,72 @@ export const InventoryModal = ({
             <div>
               <label className="label">Category</label>
               <select
-                value={formData.category}
-                onChange={(e) => handleChange("category", e.target.value)}
-                className="input-field text-[13px]"
+                value={selectedCategoryType}
+                onChange={(e) => handleCategorySelect(e.target.value)}
+                className="input-field text-[13px] font-medium"
               >
                 <option value="">Select Category...</option>
                 {INVENTORY_CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value}>
-                    {cat.label}
+                    {cat.label} (Unit: {cat.defaultUnit})
                   </option>
                 ))}
+                <option value={OTHER_CATEGORY_KEY}>
+                  ✨ Other (Custom Category)...
+                </option>
               </select>
             </div>
 
-            <div>
-              <label className="label">Brand / Manufacturer</label>
-              <input
-                type="text"
-                placeholder="Castrol"
-                value={formData.brand}
-                onChange={(e) => handleChange("brand", e.target.value)}
-                className="input-field text-[13.5px]"
-              />
-            </div>
+            {selectedCategoryType === OTHER_CATEGORY_KEY ? (
+              <div>
+                <label className="label text-amber-dark font-bold">
+                  Custom Category Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Type custom category name..."
+                  value={customCategoryInput}
+                  onChange={(e) => handleCustomCategoryChange(e.target.value)}
+                  className="input-field text-[13.5px] border-amber/60 bg-amber-soft/20 focus:border-amber font-medium"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="label">Brand / Manufacturer</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Castrol, Bosch, Tata, Supreme..."
+                  value={formData.brand}
+                  onChange={(e) => handleChange("brand", e.target.value)}
+                  className="input-field text-[13.5px]"
+                />
+              </div>
+            )}
 
             <div>
-              <label className="label">Size / Grade</label>
+              <label className="label">Size / Grade / Specification</label>
               <input
                 type="text"
-                placeholder="15W-40"
+                placeholder="e.g. 24x18 Ft, 15W-40, 20 Ton, 12mm..."
                 value={formData.size}
                 onChange={(e) => handleChange("size", e.target.value)}
                 className="input-field text-[13.5px]"
               />
             </div>
+
+            {selectedCategoryType === OTHER_CATEGORY_KEY && (
+              <div>
+                <label className="label">Brand / Manufacturer</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Castrol, Bosch, Tata, Supreme..."
+                  value={formData.brand}
+                  onChange={(e) => handleChange("brand", e.target.value)}
+                  className="input-field text-[13.5px]"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -351,7 +551,14 @@ export const InventoryModal = ({
             </div>
 
             <div>
-              <label className="label">Unit *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="label m-0">Unit *</label>
+                {selectedCategoryType && selectedCategoryType !== OTHER_CATEGORY_KEY && (
+                  <span className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-mono">
+                    Auto-set
+                  </span>
+                )}
+              </div>
               <select
                 value={formData.unit}
                 onChange={(e) => handleChange("unit", e.target.value)}
@@ -366,7 +573,7 @@ export const InventoryModal = ({
             </div>
 
             <div>
-              <label className="label">Rate (₹)</label>
+              <label className="label">Purchase Rate (₹)</label>
               <input
                 type="number"
                 min="0"
@@ -418,10 +625,10 @@ export const InventoryModal = ({
             </div>
 
             <div>
-              <label className="label">Rack / Remarks</label>
+              <label className="label">Rack / Storage Bin / Remarks</label>
               <input
                 type="text"
-                placeholder="Rack 3-B"
+                placeholder="e.g. Bin A-12, Upper Shelf, Tripal Rack"
                 value={formData.remarks}
                 onChange={(e) => handleChange("remarks", e.target.value)}
                 className="input-field text-[13.5px]"
@@ -432,8 +639,15 @@ export const InventoryModal = ({
 
         {/* Bottom Save Action Bar */}
         <div className="p-3.5 bg-paper-raised border border-line rounded-xl flex items-center justify-between shadow-card">
-          <div className="text-[12.5px] text-slate font-mono">
-            {formData.itemCode ? `${formData.itemCode} • ${formData.quantity} ${formData.unit}` : "New Item"}
+          <div className="text-[12.5px] text-slate font-mono flex items-center gap-2">
+            <span className="font-bold text-ink">
+              {getInventoryLocationName(formData.location)}:
+            </span>
+            <span>
+              {formData.itemName
+                ? `${formData.itemName} (${formData.itemCode || "SKU"}) • ${formData.quantity} ${formData.unit}`
+                : "New Product"}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -451,7 +665,9 @@ export const InventoryModal = ({
               className="btn btn-primary px-4 py-1.5 text-[13px]"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>{loading ? "Saving..." : isEdit ? "Save Changes" : "Save Item"}</span>
+              <span>
+                {loading ? "Saving..." : isEdit ? "Save Changes" : "Save Product"}
+              </span>
             </button>
           </div>
         </div>

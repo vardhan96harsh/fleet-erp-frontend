@@ -9,6 +9,10 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog.jsx";
 import { InventoryModal } from "../components/inventory/InventoryModal.jsx";
 import { formatCurrency } from "../utils/formatters.js";
 import { Plus, Package, Edit3, MapPin } from "lucide-react";
+import {
+  getInventoryLocationName,
+  INVENTORY_LOCATIONS,
+} from "../constants/inventoryLocations.js";
 
 export const InventoryPage = () => {
   const [items, setItems] = useState([]);
@@ -72,11 +76,13 @@ export const InventoryPage = () => {
       setItems((prev) =>
         prev.map((i) => (i._id === updated._id ? updated : i))
       );
-      toast.success(`Item ${updated.itemCode} updated`);
+      toast.success(`Product ${updated.itemName || updated.itemCode} updated`);
     } else {
       const created = await inventoryService.create(formData);
       setItems((prev) => [created, ...prev]);
-      toast.success(`Item ${created.itemCode} added to inventory`);
+      toast.success(
+        `Product ${created.itemName || created.itemCode} added to ${getInventoryLocationName(created.location)} inventory`
+      );
     }
   };
 
@@ -85,7 +91,7 @@ export const InventoryPage = () => {
     try {
       await inventoryService.delete(deleteTargetId);
       setItems((prev) => prev.filter((i) => i._id !== deleteTargetId));
-      toast.success("Item moved to Recycle Bin");
+      toast.success("Product moved to Recycle Bin");
       setDeleteTargetId(null);
       setIsModalOpen(false);
     } catch (err) {
@@ -101,7 +107,7 @@ export const InventoryPage = () => {
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search item code, name, category, brand..."
+            placeholder="Search product code, name, category, brand..."
             className="w-full sm:w-auto"
           />
           <div className="flex items-center gap-1.5">
@@ -112,18 +118,18 @@ export const InventoryPage = () => {
               All Locations
             </FilterChip>
             <FilterChip
-              active={locationFilter === "LOCATION_A"}
-              onClick={() => setLocationFilter("LOCATION_A")}
+              active={locationFilter === INVENTORY_LOCATIONS.LOCATION_A}
+              onClick={() => setLocationFilter(INVENTORY_LOCATIONS.LOCATION_A)}
             >
               <MapPin className="w-3 h-3 text-amber" />
-              <span>Location A</span>
+              <span>Vidisha</span>
             </FilterChip>
             <FilterChip
-              active={locationFilter === "LOCATION_B"}
-              onClick={() => setLocationFilter("LOCATION_B")}
+              active={locationFilter === INVENTORY_LOCATIONS.LOCATION_B}
+              onClick={() => setLocationFilter(INVENTORY_LOCATIONS.LOCATION_B)}
             >
               <MapPin className="w-3 h-3 text-teal" />
-              <span>Location B</span>
+              <span>Manawar</span>
             </FilterChip>
           </div>
         </div>
@@ -134,7 +140,7 @@ export const InventoryPage = () => {
           className="btn btn-primary shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Inventory Item</span>
+          <span>Add Product</span>
         </button>
       </div>
 
@@ -150,12 +156,12 @@ export const InventoryPage = () => {
         ) : filteredItems.length === 0 ? (
           <EmptyState
             icon={Package}
-            title="No inventory items found"
-            description="No SKUs match your search query or location filter."
+            title="No inventory products found"
+            description="No products match your search query or location filter."
             action={
               <button onClick={handleOpenAdd} className="btn btn-sm btn-primary">
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add First Item</span>
+                <span>Add First Product</span>
               </button>
             }
           />
@@ -164,8 +170,8 @@ export const InventoryPage = () => {
             <table className="table-custom">
               <thead>
                 <tr>
-                  <th>Item Code</th>
-                  <th>Item Name</th>
+                  <th>Product Code</th>
+                  <th>Product Name</th>
                   <th>Category / Brand</th>
                   <th>Location</th>
                   <th>Quantity & Unit</th>
@@ -191,7 +197,7 @@ export const InventoryPage = () => {
                         </button>
                         {item.size && (
                           <span className="text-[11px] text-slate font-sans">
-                            Size: {item.size}
+                            Spec: {item.size}
                           </span>
                         )}
                       </td>
@@ -206,7 +212,7 @@ export const InventoryPage = () => {
                         )}
                       </td>
                       <td>
-                        <div>{item.category || "—"}</div>
+                        <div className="font-medium">{item.category || "—"}</div>
                         {item.brand && (
                           <div className="text-[11.5px] text-slate">
                             {item.brand}
@@ -215,18 +221,14 @@ export const InventoryPage = () => {
                       </td>
                       <td>
                         <span
-                          className={`inline-flex items-center gap-1 font-mono text-[11.5px] font-semibold px-2 py-0.5 rounded border ${
+                          className={`inline-flex items-center gap-1 font-mono text-[11.5px] font-bold px-2 py-0.5 rounded border ${
                             item.location === "LOCATION_A"
                               ? "bg-amber-soft/40 text-amber-dark border-amber/30"
                               : "bg-teal-soft/40 text-teal-dark border-teal/30"
                           }`}
                         >
                           <MapPin className="w-3 h-3" />
-                          <span>
-                            {item.location === "LOCATION_A"
-                              ? "Location A"
-                              : "Location B"}
-                          </span>
+                          <span>{getInventoryLocationName(item.location)}</span>
                         </span>
                       </td>
                       <td>
@@ -286,8 +288,8 @@ export const InventoryPage = () => {
         isOpen={!!deleteTargetId}
         onClose={() => setDeleteTargetId(null)}
         onConfirm={handleDelete}
-        title="Move Item to Recycle Bin"
-        message="This inventory item will be soft-deleted and moved to the Recycle Bin. You can restore it at any time."
+        title="Move Product to Recycle Bin"
+        message="This inventory product will be soft-deleted and moved to the Recycle Bin. You can restore it at any time."
         confirmText="Move to Recycle Bin"
         confirmVariant="danger"
       />
