@@ -29,6 +29,7 @@ export const VehicleModal = ({
     fitnessExpiry: "",
     insuranceExpiry: "",
     permitExpiry: "",
+    permitType: "NATIONAL",
     rcNumber: "",
     rcExpiry: "",
     status: "ACTIVE",
@@ -56,6 +57,7 @@ export const VehicleModal = ({
         fitnessExpiry: vehicle.fitnessExpiry ? String(vehicle.fitnessExpiry).slice(0, 10) : "",
         insuranceExpiry: vehicle.insuranceExpiry ? String(vehicle.insuranceExpiry).slice(0, 10) : "",
         permitExpiry: vehicle.permitExpiry ? String(vehicle.permitExpiry).slice(0, 10) : "",
+        permitType: vehicle.permitType || "NATIONAL",
         rcNumber: vehicle.rcNumber || "",
         rcExpiry: vehicle.rcExpiry ? String(vehicle.rcExpiry).slice(0, 10) : "",
         status: vehicle.status || "ACTIVE",
@@ -74,6 +76,7 @@ export const VehicleModal = ({
         fitnessExpiry: "",
         insuranceExpiry: "",
         permitExpiry: "",
+        permitType: "NATIONAL",
         rcNumber: "",
         rcExpiry: "",
         status: "ACTIVE",
@@ -434,7 +437,18 @@ export const VehicleModal = ({
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 sm:w-1/2 justify-end">
+                      <div className="flex items-center gap-2 sm:w-1/2 justify-end flex-wrap sm:flex-nowrap">
+                        {key === "permitExpiry" && (
+                          <select
+                            value={formData.permitType || "NATIONAL"}
+                            onChange={(e) => handleChange("permitType", e.target.value)}
+                            className="input-field py-1 text-[12px] max-w-[140px] font-semibold text-ink bg-paper-subtle cursor-pointer"
+                          >
+                            <option value="NATIONAL">National Permit</option>
+                            <option value="STATE">State Permit</option>
+                          </select>
+                        )}
+
                         <input
                           type="date"
                           value={val}
