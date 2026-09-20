@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c8c2b3;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a090;
+}
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 border border-line bg-paper-raised text-ink hover:border-slate-soft active:scale-[0.98] disabled:opacity-45 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply bg-ink text-white border-ink hover:bg-ink-soft hover:border-ink-soft;
+  }
+  .btn-danger {
+    @apply text-rust border-rust-soft hover:bg-rust-soft/50;
+  }
+  .btn-teal {
+    @apply bg-teal text-white border-teal hover:bg-teal-dark;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1 text-[12px];
+  }
+  .btn-lg {
+    @apply px-4 py-2.5 text-[14px];
+  }
+
+  /* Form Controls */
+  .input-field {
+    @apply w-full px-3 py-1.5 text-[13px] rounded-md border border-line bg-paper-subtle text-ink placeholder:text-slate-soft focus:outline-none focus:ring-1 focus:ring-ink focus:border-ink transition-colors;
+  }
+  .label {
+    @apply block text-[11.5px] font-semibold uppercase tracking-wider text-slate mb-1;
+  }
+
+  /* Table styling */
+  .table-custom {
+    @apply w-full border-collapse text-[13px];
+  }
+  .table-custom th {
+    @apply text-left font-semibold text-slate text-[11.5px] uppercase tracking-wider px-3 py-2.5 border-b border-line bg-paper-subtle/50 whitespace-nowrap;
+  }
+  .table-custom td {
+    @apply px-3 py-2.5 border-b border-line align-middle transition-colors;
+  }
+  .table-custom tbody tr:hover td {
+    @apply bg-paper-subtle;
+  }
+
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11.5px] font-semibold;
+  }
+  .badge-ok {
+    @apply bg-teal-soft text-teal;
+  }
+  .badge-warn {
+    @apply bg-amber-soft text-amber;
+  }
+  .badge-bad {
+    @apply bg-rust-soft text-rust;
+  }
+  .badge-neutral {
+    @apply bg-paper-muted text-slate;
+  }
+
+  /* Panels & Cards */
+  .panel {
+    @apply bg-paper-raised border border-line rounded-lg shadow-card;
+  }
+  .panel-pad {
+    @apply p-4 md:p-5;
+  }
+
+  /* Filter Chip */
+  .filter-chip {
+    @apply px-3 py-1 rounded-full border border-line text-[12.5px] font-medium bg-paper-raised text-ink cursor-pointer hover:border-slate-soft transition-all select-none;
+  }
+  .filter-chip-active {
+    @apply bg-ink text-white border-ink;
+  }
+}
+
+/* Side Panel Slide Animations */
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-backdrop {
+  animation: fadeInBackdrop 0.2s ease-out forwards;
+}
