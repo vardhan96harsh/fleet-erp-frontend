@@ -30,7 +30,9 @@ export const DashboardPage = ({ onNavigate, onOpenVehicle }) => {
       const summary = await dashboardService.getSummary();
       setData(summary);
     } catch (err) {
-      console.error("Failed to load dashboard:", err);
+      if (err?.response?.status !== 401) {
+        console.error("Failed to load dashboard:", err);
+      }
     } finally {
       setLoading(false);
     }
