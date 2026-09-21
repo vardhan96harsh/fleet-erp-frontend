@@ -406,22 +406,22 @@ export const AssignmentsPage = () => {
               <table className="table-custom">
                 <thead>
                   <tr>
-                    <th>Vehicle Number</th>
-                    <th>Assigned Product</th>
-                    <th>Qty & Unit</th>
-                    <th>Depot Location</th>
-                    <th>Assignment Date</th>
-                    <th>Driver In Charge</th>
+                    <th className="whitespace-nowrap">Vehicle Number</th>
+                    <th className="whitespace-nowrap">Assigned Product</th>
+                    <th className="whitespace-nowrap">Qty & Unit</th>
+                    <th className="whitespace-nowrap">Depot Location</th>
+                    <th className="whitespace-nowrap">Assignment Date</th>
+                    <th className="whitespace-nowrap">Driver In Charge</th>
                     <th>Purpose / Notes</th>
-                    <th>Status</th>
-                    <th className="text-right">Actions</th>
+                    <th className="whitespace-nowrap">Status</th>
+                    <th className="text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAssignments.map((a) => (
                     <tr key={a._id}>
                       {/* Vehicle */}
-                      <td>
+                      <td className="whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Truck className="w-4 h-4 text-slate shrink-0" />
                           <div>
@@ -448,7 +448,7 @@ export const AssignmentsPage = () => {
                       </td>
 
                       {/* Quantity & Unit */}
-                      <td>
+                      <td className="whitespace-nowrap">
                         <div className="font-mono font-bold text-[14px] text-ink">
                           {a.quantity}{" "}
                           <span className="text-[11.5px] font-normal text-slate">
@@ -463,7 +463,7 @@ export const AssignmentsPage = () => {
                       </td>
 
                       {/* Warehouse Location */}
-                      <td>
+                      <td className="whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 font-mono text-[11.5px] font-bold px-2 py-0.5 rounded border ${
                             a.location === "LOCATION_A"
@@ -477,7 +477,7 @@ export const AssignmentsPage = () => {
                       </td>
 
                       {/* Assigned Date */}
-                      <td>
+                      <td className="whitespace-nowrap">
                         <div className="font-mono text-[12.5px] text-ink">
                           {fmtD(a.assignedDate)}
                         </div>
@@ -507,9 +507,12 @@ export const AssignmentsPage = () => {
                       </td>
 
                       {/* Status */}
-                      <td>
-                        <Badge variant={a.status === "ASSIGNED" ? "ok" : "default"}>
-                          {a.status === "ASSIGNED" ? "Active on Truck" : "Returned"}
+                      <td className="whitespace-nowrap">
+                        <Badge
+                          variant={a.status === "ASSIGNED" ? "ok" : "neutral"}
+                          className="whitespace-nowrap text-[11px] font-medium"
+                        >
+                          {a.status === "ASSIGNED" ? "Assigned" : "Returned"}
                         </Badge>
                       </td>
 

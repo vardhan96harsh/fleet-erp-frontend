@@ -248,7 +248,7 @@ export const AssignmentModal = ({
             ? "Processing..."
             : isEdit
             ? "Save Changes"
-            : "Confirm & Assign"}
+            : "Save Assignment"}
         </span>
       </button>
     </div>
@@ -274,8 +274,8 @@ export const AssignmentModal = ({
       }
       subtitle={
         isEdit
-          ? `Assigned item specs & inventory sync`
-          : "Issue tools, tripals, jacks, or spares to commercial trucks with real-time stock deduction"
+          ? `Vehicle equipment assignment details`
+          : "Issue equipment, tripals, tools, or spare parts to vehicles"
       }
       breadcrumbs="Assignments"
       badge={
@@ -294,24 +294,6 @@ export const AssignmentModal = ({
           <span className="font-medium">{error}</span>
         </div>
       )}
-
-      {/* Sync Warning Notice */}
-      <div className="mb-5 p-3.5 rounded-xl bg-amber-soft/40 border border-amber/30 text-ink text-[13px] flex items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <ArrowDownCircle className="w-5 h-5 text-amber shrink-0" />
-          <div>
-            <span className="font-bold">Automatic Inventory Synchronization:</span>{" "}
-            Confirming this assignment will instantly deduct the quantity from the{" "}
-            <span className="font-semibold text-amber-dark">
-              {getInventoryLocationName(formData.location)}
-            </span>{" "}
-            warehouse stock.
-          </div>
-        </div>
-        <Badge variant="warn" className="text-[11px] shrink-0 font-mono">
-          Live Stock Sync
-        </Badge>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Section 1: Vehicle & Warehouse Target */}
@@ -581,13 +563,13 @@ export const AssignmentModal = ({
 
         {/* Bottom Save Action Bar */}
         <div className="p-3.5 bg-paper-raised border border-line rounded-xl flex items-center justify-between shadow-card">
-          <div className="text-[12.5px] text-slate font-mono">
+          <div className="text-[12.5px] text-slate">
             {formData.vehicleId && formData.inventoryItemId ? (
               <span className="text-ink font-semibold">
-                Ready to assign {formData.quantity} {selectedProduct?.unit || "PCS"} to vehicle
+                Assigning {formData.quantity} {selectedProduct?.unit || "PCS"} to vehicle
               </span>
             ) : (
-              "Complete vehicle and product selections"
+              "Select a vehicle and product to proceed"
             )}
           </div>
 
@@ -611,7 +593,7 @@ export const AssignmentModal = ({
                   ? "Processing..."
                   : isEdit
                   ? "Save Changes"
-                  : "Confirm & Deduct Stock"}
+                  : "Save Assignment"}
               </span>
             </button>
           </div>

@@ -82,7 +82,7 @@
 
   /* Status Badges */
   .badge {
-    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11.5px] font-semibold;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold whitespace-nowrap;
   }
   .badge-ok {
     @apply bg-teal-soft text-teal;
