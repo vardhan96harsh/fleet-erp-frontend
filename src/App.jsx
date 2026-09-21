@@ -7,6 +7,7 @@ import DashboardPage from "./pages/DashboardPage.jsx";
 import VehiclesPage from "./pages/VehiclesPage.jsx";
 import DriversPage from "./pages/DriversPage.jsx";
 import InventoryPage from "./pages/InventoryPage.jsx";
+import AssignmentsPage from "./pages/AssignmentsPage.jsx";
 import AttendancePage from "./pages/AttendancePage.jsx";
 import ImportExportPage from "./pages/ImportExportPage.jsx";
 import RecycleBinPage from "./pages/RecycleBinPage.jsx";
@@ -74,6 +75,11 @@ const AppContent = () => {
       title: "Warehouse & Spare Inventory",
       subtitle: "Track parts and consumables across Vidisha and Manawar warehouses",
       component: <InventoryPage />,
+    },
+    assignments: {
+      title: "Vehicle Item & Equipment Assignments",
+      subtitle: "Assign tripals, jacks, ropes, and spare parts to fleet vehicles with auto-inventory sync",
+      component: <AssignmentsPage />,
     },
     attendance: {
       title: "Driver Daily & Monthly Attendance",

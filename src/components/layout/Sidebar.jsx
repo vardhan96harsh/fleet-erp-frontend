@@ -4,6 +4,7 @@ import {
   Truck,
   Users,
   Package,
+  Layers,
   CalendarCheck,
   ArrowLeftRight,
   Trash2,
@@ -44,6 +45,11 @@ export const Sidebar = ({ currentRoute, onNavigate }) => {
           key: "inventory",
           label: "Inventory",
           icon: Package,
+        },
+        {
+          key: "assignments",
+          label: "Assignments",
+          icon: Layers,
         },
         {
           key: "attendance",
