@@ -253,6 +253,7 @@ export const DriversPage = () => {
         onSave={handleSave}
         onDelete={() => setDeleteTargetId(selectedDriver?._id)}
         vehicleList={vehicles}
+        driverList={drivers}
       />
 
       {/* Delete Confirmation */}

@@ -207,6 +207,7 @@ export const VehiclesPage = ({ preOpenId }) => {
                 <tr>
                   <th>Vehicle No</th>
                   <th>Type & Capacity</th>
+                  <th>Assigned Driver</th>
                   <th>Owner / Vendor</th>
                   <th>Operational</th>
                   <th>Compliance Status</th>
@@ -254,6 +255,18 @@ export const VehiclesPage = ({ preOpenId }) => {
                           <div className="text-[11.5px] text-slate">
                             {v.capacity}
                           </div>
+                        )}
+                      </td>
+                      <td>
+                        {v.assignedDriver ? (
+                          <div className="font-medium text-ink flex items-center gap-1.5 whitespace-nowrap">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            <span>{v.assignedDriver.name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-[11.5px] text-slate-soft italic">
+                            Unassigned (Free)
+                          </span>
                         )}
                       </td>
                       <td>
