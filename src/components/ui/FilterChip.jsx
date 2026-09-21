@@ -11,11 +11,11 @@ export const FilterChip = ({
     <button
       type="button"
       onClick={onClick}
-      className={`filter-chip inline-flex items-center gap-1.5 ${
+      className={`filter-chip inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${
         active ? "filter-chip-active" : ""
       } ${className}`}
     >
-      <span>{children}</span>
+      {children}
       {count !== undefined && (
         <span
           className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono font-semibold ${

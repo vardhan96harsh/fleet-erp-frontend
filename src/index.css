@@ -110,7 +110,7 @@
 
   /* Filter Chip */
   .filter-chip {
-    @apply px-3 py-1 rounded-full border border-line text-[12.5px] font-medium bg-paper-raised text-ink cursor-pointer hover:border-slate-soft transition-all select-none;
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border border-line text-[12.5px] font-medium bg-paper-raised text-ink cursor-pointer hover:border-slate-soft transition-all select-none whitespace-nowrap leading-none;
   }
   .filter-chip-active {
     @apply bg-ink text-white border-ink;

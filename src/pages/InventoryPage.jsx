@@ -121,14 +121,14 @@ export const InventoryPage = () => {
               active={locationFilter === INVENTORY_LOCATIONS.LOCATION_A}
               onClick={() => setLocationFilter(INVENTORY_LOCATIONS.LOCATION_A)}
             >
-              <MapPin className="w-3 h-3 text-amber" />
+              <MapPin className="w-3.5 h-3.5 shrink-0 text-amber" />
               <span>Vidisha</span>
             </FilterChip>
             <FilterChip
               active={locationFilter === INVENTORY_LOCATIONS.LOCATION_B}
               onClick={() => setLocationFilter(INVENTORY_LOCATIONS.LOCATION_B)}
             >
-              <MapPin className="w-3 h-3 text-teal" />
+              <MapPin className="w-3.5 h-3.5 shrink-0 text-teal" />
               <span>Manawar</span>
             </FilterChip>
           </div>
