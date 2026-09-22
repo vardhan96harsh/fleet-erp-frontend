@@ -1,16 +1,33 @@
 import axios from "axios";
 
-let accessToken = localStorage.getItem("fleet_access_token") || null;
-let refreshToken = localStorage.getItem("fleet_refresh_token") || null;
+let rawAccessToken = localStorage.getItem("fleet_access_token");
+let accessToken =
+  rawAccessToken && rawAccessToken !== "null" && rawAccessToken !== "undefined"
+    ? rawAccessToken
+    : null;
+
+let rawRefreshToken = localStorage.getItem("fleet_refresh_token");
+let refreshToken =
+  rawRefreshToken && rawRefreshToken !== "null" && rawRefreshToken !== "undefined"
+    ? rawRefreshToken
+    : null;
 
 export const setAccessToken = (token, user = null, newRefreshToken = null) => {
-  accessToken = token;
-  if (newRefreshToken !== undefined && newRefreshToken !== null) {
+  accessToken =
+    token && token !== "null" && token !== "undefined" ? token : null;
+
+  if (
+    newRefreshToken !== undefined &&
+    newRefreshToken !== null &&
+    newRefreshToken !== "null" &&
+    newRefreshToken !== "undefined"
+  ) {
     refreshToken = newRefreshToken;
     localStorage.setItem("fleet_refresh_token", newRefreshToken);
   }
-  if (token) {
-    localStorage.setItem("fleet_access_token", token);
+
+  if (accessToken) {
+    localStorage.setItem("fleet_access_token", accessToken);
     if (user) {
       localStorage.setItem("fleet_user", JSON.stringify(user));
     }
@@ -25,15 +42,28 @@ export const setAccessToken = (token, user = null, newRefreshToken = null) => {
 export const getCachedUser = () => {
   try {
     const raw = localStorage.getItem("fleet_user");
-    return raw ? JSON.parse(raw) : null;
+    if (
+      !raw ||
+      raw === "null" ||
+      raw === "undefined" ||
+      raw === "[object Object]"
+    ) {
+      return null;
+    }
+    return JSON.parse(raw);
   } catch {
     return null;
   }
 };
 
 export const getAccessToken = () => accessToken;
-export const getRefreshToken = () =>
-  refreshToken || localStorage.getItem("fleet_refresh_token");
+export const getRefreshToken = () => {
+  if (refreshToken && refreshToken !== "null" && refreshToken !== "undefined") {
+    return refreshToken;
+  }
+  const stored = localStorage.getItem("fleet_refresh_token");
+  return stored && stored !== "null" && stored !== "undefined" ? stored : null;
+};
 
 export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;

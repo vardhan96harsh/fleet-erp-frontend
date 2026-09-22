@@ -42,6 +42,12 @@ export const ImportExportPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size === 0) {
+      toast.error("The selected file is empty (0 bytes). Please upload a populated spreadsheet.");
+      e.target.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
       let preview;
@@ -56,8 +62,11 @@ export const ImportExportPage = () => {
       setPreviewData(preview);
       setIsPreviewOpen(true);
     } catch (err) {
+      const serverMsg =
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response.data : null);
       toast.error(
-        err.response?.data?.message || err.message || "Failed to parse Excel file"
+        serverMsg || err.message || "Failed to process Excel spreadsheet"
       );
     } finally {
       setUploading(false);

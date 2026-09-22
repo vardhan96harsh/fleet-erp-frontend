@@ -66,7 +66,7 @@ export const importExportService = {
   },
 
   async confirmImport(batchId) {
-    const res = await api.post(`/import-export/confirm/${batchId}`, null, {
+    const res = await api.post(`/import-export/confirm/${batchId}`, {}, {
       timeout: 120000,
     });
     return res.data;
