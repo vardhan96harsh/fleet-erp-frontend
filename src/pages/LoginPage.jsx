@@ -107,7 +107,7 @@ export const LoginPage = () => {
             Enterprise RBAC System • Super Admin &amp; Sub Admin Access
           </p>
           <p className="text-[11px] text-slate/70 mt-2 m-0">
-            &copy; {new Date().getFullYear()} BHANDARI GROUP • Developed by Harshvardhan
+            @{new Date().getFullYear()} Surya Developed by Harshvardhan
           </p>
         </div>
       </div>
