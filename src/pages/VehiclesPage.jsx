@@ -218,18 +218,26 @@ export const VehiclesPage = ({ preOpenId }) => {
               <tbody>
                 {filteredVehicles.map((v) => {
                   const status = worstVehicleStatus(v);
-                  const dates = [
-                    v.pucExpiry,
-                    v.fitnessExpiry,
-                    v.insuranceExpiry,
-                    v.permitExpiry,
-                    v.rcExpiry,
-                  ]
-                    .filter(Boolean)
-                    .map((d) => ({ date: d, days: daysUntil(d) }))
+                  const docEntries = [
+                    { key: "puc", name: "PUC", date: v.pucExpiry },
+                    { key: "fitness", name: "Fitness", date: v.fitnessExpiry },
+                    { key: "insurance", name: "Insurance", date: v.insuranceExpiry },
+                    { key: "permit", name: "Permit", date: v.permitExpiry },
+                    { key: "rc", name: "RC", date: v.rcExpiry },
+                  ].map((d) => ({
+                    ...d,
+                    days: daysUntil(d.date),
+                  }));
+
+                  const activeDocs = docEntries
+                    .filter((d) => Boolean(d.date))
                     .sort((a, b) => a.days - b.days);
 
-                  const nearest = dates[0];
+                  const nearest = activeDocs[0];
+                  const expiredDocs = activeDocs.filter((d) => d.days < 0);
+                  const expiringDocs = activeDocs.filter(
+                    (d) => d.days >= 0 && d.days <= 30
+                  );
 
                   return (
                     <tr key={v._id}>
@@ -285,33 +293,107 @@ export const VehiclesPage = ({ preOpenId }) => {
                         </Badge>
                       </td>
                       <td>
-                        <Badge variant={status}>
-                          {status === "ok"
-                            ? "Compliant"
-                            : status === "warn"
-                            ? "Expiring Soon"
-                            : status === "bad"
-                            ? "Expired"
-                            : "No Data"}
-                        </Badge>
+                        <div className="space-y-1.5">
+                          <Badge variant={status}>
+                            {status === "ok"
+                              ? "Compliant"
+                              : status === "warn"
+                              ? "Expiring Soon"
+                              : status === "bad"
+                              ? "Expired"
+                              : "No Data"}
+                          </Badge>
+
+                          {/* Quick visual pills for all 5 documents */}
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {docEntries.map((doc) => {
+                              let pillStyle =
+                                "bg-paper-raised text-slate-soft border border-line";
+                              let tip = `${doc.name}: Not recorded`;
+
+                              if (doc.date) {
+                                if (doc.days < 0) {
+                                  pillStyle =
+                                    "bg-rust/15 text-rust border border-rust/30 font-bold";
+                                  tip = `${doc.name}: Expired ${fmtD(doc.date)} (${Math.abs(doc.days)}d overdue)`;
+                                } else if (doc.days <= 30) {
+                                  pillStyle =
+                                    "bg-amber/15 text-amber border border-amber/30 font-bold";
+                                  tip = `${doc.name}: Expiring ${fmtD(doc.date)} (${doc.days}d left)`;
+                                } else {
+                                  pillStyle =
+                                    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
+                                  tip = `${doc.name}: Valid until ${fmtD(doc.date)} (${doc.days}d left)`;
+                                }
+                              }
+
+                              return (
+                                <span
+                                  key={doc.key}
+                                  title={tip}
+                                  className={`text-[9.5px] px-1 py-0.2 rounded font-mono cursor-help ${pillStyle}`}
+                                >
+                                  {doc.name}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </td>
                       <td>
                         {nearest ? (
-                          <div className="text-[12.5px] font-mono">
-                            <div>{fmtD(nearest.date)}</div>
-                            <span
-                              className={`text-[11px] font-sans ${
-                                nearest.days < 0
-                                  ? "text-rust font-semibold"
+                          <div className="text-[12px]">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className={`font-bold text-[10.5px] px-1.5 py-0.5 rounded font-mono uppercase ${
+                                  nearest.days < 0
+                                    ? "bg-rust-soft text-rust border border-rust/30"
+                                    : nearest.days <= 30
+                                    ? "bg-amber-soft text-amber border border-amber/30"
+                                    : "bg-paper-raised text-ink border border-line"
+                                }`}
+                              >
+                                {nearest.name}
+                              </span>
+                              <span className="font-mono text-ink text-[12px]">
+                                {fmtD(nearest.date)}
+                              </span>
+                            </div>
+                            <div className="mt-1 flex items-center gap-1">
+                              <span
+                                className={`text-[11px] font-semibold ${
+                                  nearest.days < 0
+                                    ? "text-rust font-bold"
+                                    : nearest.days <= 30
+                                    ? "text-amber font-bold"
+                                    : "text-slate"
+                                }`}
+                              >
+                                {nearest.days < 0
+                                  ? `⚠️ ${Math.abs(nearest.days)}d overdue`
                                   : nearest.days <= 30
-                                  ? "text-amber font-semibold"
-                                  : "text-slate"
-                              }`}
-                            >
-                              {nearest.days < 0
-                                ? `${Math.abs(nearest.days)}d overdue`
-                                : `${nearest.days}d left`}
-                            </span>
+                                  ? `⏳ ${nearest.days}d left`
+                                  : `${nearest.days}d left`}
+                              </span>
+                              {activeDocs.length > 1 &&
+                                (expiredDocs.length > 1 ||
+                                  (expiredDocs.length === 0 &&
+                                    expiringDocs.length > 1)) && (
+                                  <span
+                                    title={activeDocs
+                                      .slice(1)
+                                      .map((d) => `${d.name}: ${fmtD(d.date)}`)
+                                      .join("\n")}
+                                    className="text-[10.5px] text-slate-soft cursor-help underline decoration-dotted"
+                                  >
+                                    (+
+                                    {expiredDocs.length > 1
+                                      ? expiredDocs.length - 1
+                                      : expiringDocs.length - 1}{" "}
+                                    more)
+                                  </span>
+                                )}
+                            </div>
                           </div>
                         ) : (
                           <span className="text-slate-soft text-[12px]">—</span>
