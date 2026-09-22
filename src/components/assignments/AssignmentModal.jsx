@@ -46,7 +46,7 @@ const CATEGORY_TABS = [
   { id: "rope", label: "Cargo Ropes", keywords: ["rope", "lash", "belt", "strap", "tie"] },
   { id: "bolt", label: "Bolts & Fasteners", keywords: ["bolt", "nut", "screw", "fastener", "washer", "pin"] },
   { id: "safety", label: "Safety Gear", keywords: ["safety", "jacket", "vest", "helmet", "cone", "extinguisher", "first aid"] },
-  { id: "spares", label: "Spares & Fluids", keywords: ["spare", "oil", "filter", "coolant", "lubricant", "grease", "part"] },
+  { id: "spares", label: "Spares & Fluids", keywords: ["spare", "oil", "filter", "coolant", "lubricant", "grease", "part", "def", "urea", "adblue"] },
 ];
 
 export const AssignmentModal = ({
@@ -263,6 +263,11 @@ export const AssignmentModal = ({
             : item.category?.toLowerCase().includes("bolt") ||
               item.itemName?.toLowerCase().includes("bolt")
             ? "Wheel Bolts & Fasteners"
+            : item.category?.toLowerCase().includes("def") ||
+              item.category?.toLowerCase().includes("urea") ||
+              item.itemName?.toLowerCase().includes("def") ||
+              item.itemName?.toLowerCase().includes("urea")
+            ? "Engine Oil & Consumables"
             : prev.purpose,
       };
     });

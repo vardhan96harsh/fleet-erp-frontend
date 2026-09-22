@@ -21,9 +21,10 @@ const INVENTORY_UNITS = [
   { value: "BOX", label: "BOX — Boxes" },
 ];
 
-// Standard Transport ERP Categories (without Body & Cabin, including Tripal, Safety Gear, Rope, Jack, Wheel Bolt)
+// Standard Transport ERP Categories (without Body & Cabin, including Tripal, DEF / Urea, Safety Gear, Rope, Jack, Wheel Bolt)
 const INVENTORY_CATEGORIES = [
   { value: "Tripal / Waterproof Tarpaulin", label: "Tripal / Waterproof Tarpaulin", defaultUnit: "PCS" },
+  { value: "DEF / Urea", label: "DEF / Urea", defaultUnit: "LTR" },
   { value: "Safety Gear", label: "Safety Gear", defaultUnit: "PCS" },
   { value: "Rope", label: "Rope", defaultUnit: "MTR" },
   { value: "Jack", label: "Jack", defaultUnit: "PCS" },
