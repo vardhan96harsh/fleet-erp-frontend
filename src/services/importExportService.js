@@ -39,6 +39,7 @@ export const importExportService = {
     formData.append("file", file);
     const res = await api.post("/import-export/preview/vehicles", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000,
     });
     return res.data.data;
   },
@@ -48,6 +49,7 @@ export const importExportService = {
     formData.append("file", file);
     const res = await api.post("/import-export/preview/drivers", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000,
     });
     return res.data.data;
   },
@@ -58,12 +60,15 @@ export const importExportService = {
     formData.append("location", location);
     const res = await api.post("/import-export/preview/inventory", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000,
     });
     return res.data.data;
   },
 
   async confirmImport(batchId) {
-    const res = await api.post(`/import-export/confirm/${batchId}`);
+    const res = await api.post(`/import-export/confirm/${batchId}`, null, {
+      timeout: 120000,
+    });
     return res.data;
   },
 

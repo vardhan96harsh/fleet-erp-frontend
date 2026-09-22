@@ -44,7 +44,7 @@ export const getBaseURL = () => {
 
 const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 15000,
+  timeout: 60000, // 60s timeout to handle cloud spin-up & bulk operations gracefully
   withCredentials: true, // Needed for sending/receiving refresh cookies
   headers: {
     "Content-Type": "application/json",
