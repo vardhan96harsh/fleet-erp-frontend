@@ -23,7 +23,7 @@ const AppContent = () => {
       <div className="min-h-screen w-screen flex flex-col items-center justify-center bg-ink text-white">
         <div className="w-8 h-8 rounded-full border-2 border-amber-soft border-t-transparent animate-spin mb-3" />
         <div className="font-mono text-[12.5px] text-slate-soft">
-          Starting Fleet Ledger ERP...
+          Starting BHANDARI GROUP Fleet ERP...
         </div>
       </div>
     );

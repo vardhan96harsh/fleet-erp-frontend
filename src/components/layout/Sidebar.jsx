@@ -93,11 +93,11 @@ export const Sidebar = ({ currentRoute, onNavigate }) => {
     <aside className="w-56 shrink-0 bg-ink text-[#D9DCE4] flex flex-col h-full border-r border-ink-soft select-none">
       {/* Brand Header */}
       <div className="px-5 pt-5 pb-4 border-b border-ink-soft">
-        <div className="font-mono text-[10.5px] uppercase tracking-wider text-slate-soft">
-          Fleet Ledger
+        <div className="text-base font-bold text-white tracking-tight">
+          BHANDARI GROUP
         </div>
-        <div className="text-base font-semibold text-white tracking-tight mt-0.5">
-          Enterprise ERP
+        <div className="font-mono text-[10.5px] uppercase tracking-wider text-amber-soft mt-0.5">
+          Fleet &amp; Logistics ERP
         </div>
       </div>
 

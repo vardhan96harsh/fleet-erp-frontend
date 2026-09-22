@@ -45,10 +45,10 @@ export const LoginPage = () => {
             <Shield className="w-5 h-5 text-amber-soft" />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-ink tracking-tight m-0">
-            Fleet Ledger
+            BHANDARI GROUP
           </h1>
           <div className="font-mono text-[11px] text-slate tracking-wider uppercase mt-0.5">
-            Fleet · Compliance · Warehouse ERP
+            Fleet · Logistics · Warehouse ERP
           </div>
         </div>
 
@@ -104,10 +104,10 @@ export const LoginPage = () => {
 
         <div className="mt-6 pt-4 border-t border-line text-center">
           <p className="text-[11.5px] text-slate m-0 leading-relaxed">
-            Enterprise RBAC System • Super Admin & Sub Admin Access
+            Enterprise RBAC System • Super Admin &amp; Sub Admin Access
           </p>
           <p className="text-[11px] text-slate/70 mt-2 m-0">
-            &copy; {new Date().getFullYear()} Fleet ERP • Developed by Harshvardhan
+            &copy; {new Date().getFullYear()} BHANDARI GROUP • Developed by Harshvardhan
           </p>
         </div>
       </div>

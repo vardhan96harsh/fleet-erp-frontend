@@ -23,7 +23,7 @@ export const AppShell = ({
         <footer className="w-full border-t border-line/60 bg-paper/80 backdrop-blur-sm py-4 px-6 md:px-8 mt-auto">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate">
             <div>
-              &copy; {currentYear} <span className="font-semibold text-ink">Fleet ERP</span> &bull; Developed by <span className="font-medium text-ink">Harshvardhan</span>
+              &copy; {currentYear} <span className="font-semibold text-ink">BHANDARI GROUP</span> &bull; Developed by <span className="font-medium text-ink">Harshvardhan</span>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-slate-soft">
               <span>Enterprise Fleet &amp; Inventory Management</span>
