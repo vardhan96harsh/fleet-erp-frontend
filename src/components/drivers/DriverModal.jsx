@@ -13,6 +13,8 @@ import {
   Search,
   ArrowRightLeft,
   UserCheck,
+  X,
+  Check,
 } from "lucide-react";
 
 export const DriverModal = ({
@@ -128,8 +130,10 @@ export const DriverModal = ({
       if (q) {
         const matchNo = (v.vehicleNo || "").toLowerCase().includes(q);
         const matchType = (v.type || "").toLowerCase().includes(q);
+        const matchCap = (v.capacity || "").toLowerCase().includes(q);
+        const matchOwner = (v.ownerName || "").toLowerCase().includes(q);
         const matchDriver = (v.assignedDriverInfo?.name || "").toLowerCase().includes(q);
-        return matchNo || matchType || matchDriver;
+        return matchNo || matchType || matchCap || matchOwner || matchDriver;
       }
       return true;
     });
@@ -460,13 +464,14 @@ export const DriverModal = ({
                 </div>
               </div>
 
-              {/* Vehicle Dropdown Selector with Optgroups */}
+              {/* Searchable Vehicle Selector */}
               <div className="space-y-3 pt-2 border-t border-line/60">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                   <label className="label text-[13px] font-bold text-ink mb-0 flex items-center gap-1.5">
+                    <Truck className="w-4 h-4 text-amber" />
                     <span>Select Assigned Vehicle</span>
                     <span className="text-slate-soft text-xs font-normal">
-                      (Clear indicators for Free vs Occupied)
+                      (Search & Free vs Occupied filter)
                     </span>
                   </label>
 
@@ -478,7 +483,7 @@ export const DriverModal = ({
                       className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-all ${
                         vehicleFilter === "all"
                           ? "bg-ink text-white border-ink font-bold"
-                          : "bg-paper-subtle text-slate border-line"
+                          : "bg-paper-subtle text-slate border-line hover:bg-paper-raised"
                       }`}
                     >
                       All ({processedVehicles.length})
@@ -489,7 +494,7 @@ export const DriverModal = ({
                       className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-all ${
                         vehicleFilter === "available"
                           ? "bg-emerald-600 text-white border-emerald-600 font-bold"
-                          : "bg-paper-subtle text-emerald-700 dark:text-emerald-400 border-line"
+                          : "bg-paper-subtle text-emerald-700 dark:text-emerald-400 border-line hover:bg-paper-raised"
                       }`}
                     >
                       🟢 Free ({availableVehicles.length})
@@ -500,7 +505,7 @@ export const DriverModal = ({
                       className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-all ${
                         vehicleFilter === "assigned"
                           ? "bg-amber text-white border-amber font-bold"
-                          : "bg-paper-subtle text-amber-dark border-line"
+                          : "bg-paper-subtle text-amber-dark border-line hover:bg-paper-raised"
                       }`}
                     >
                       🔒 Occupied ({occupiedVehicles.length})
@@ -508,36 +513,147 @@ export const DriverModal = ({
                   </div>
                 </div>
 
-                <select
-                  value={formData.assignedVehicleId}
-                  onChange={(e) => handleChange("assignedVehicleId", e.target.value)}
-                  className="input-field font-mono font-medium text-[13.5px] py-2"
-                >
-                  <option value="">— No Vehicle Assigned (Floating Pool) —</option>
-
-                  {/* Group 1: Available / Free Vehicles */}
-                  {availableVehicles.length > 0 && (
-                    <optgroup label="🟢 AVAILABLE VEHICLES (FREE TO ASSIGN)">
-                      {availableVehicles.map((v) => (
-                        <option key={v._id} value={v._id}>
-                          {v.vehicleNo} {v.type ? `— ${v.type}` : ""} {v.capacity ? `(${v.capacity})` : ""}{" "}
-                          {v.isCurrentDriverVehicle ? "• [CURRENTLY ASSIGNED TO THIS DRIVER]" : "• [FREE]"}
-                        </option>
-                      ))}
-                    </optgroup>
+                {/* Instant Search Bar */}
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={vehicleSearch}
+                    onChange={(e) => setVehicleSearch(e.target.value)}
+                    placeholder="Type vehicle number (e.g. MP40, MP04), type, or driver..."
+                    className="input-field pl-9 pr-8 text-[13px] py-2 bg-paper-raised"
+                  />
+                  {vehicleSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setVehicleSearch("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate hover:text-ink p-1 rounded-full hover:bg-paper-subtle transition-colors"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
+                </div>
 
-                  {/* Group 2: Already Assigned Vehicles */}
-                  {occupiedVehicles.length > 0 && (
-                    <optgroup label="🔒 OCCUPIED VEHICLES (ASSIGNED TO OTHER DRIVERS)">
-                      {occupiedVehicles.map((v) => (
-                        <option key={v._id} value={v._id}>
-                          {v.vehicleNo} {v.type ? `— ${v.type}` : ""} • [Assigned to {v.assignedDriverInfo?.name || "Another Driver"}]
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
+                {/* Interactive Suggestions List */}
+                <div className="border border-line rounded-xl overflow-hidden bg-paper-subtle/30 shadow-inner">
+                  <div className="max-h-56 overflow-y-auto divide-y divide-line/60 p-1">
+                    {/* Option 1: Unassigned (Floating Pool) */}
+                    <button
+                      type="button"
+                      onClick={() => handleChange("assignedVehicleId", "")}
+                      className={`w-full text-left p-2.5 rounded-lg flex items-center justify-between gap-2 text-xs transition-all ${
+                        !formData.assignedVehicleId
+                          ? "bg-ink/10 dark:bg-white/10 font-bold border border-ink/30 text-ink"
+                          : "hover:bg-paper-raised text-slate"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-slate shrink-0" />
+                        <span className="font-semibold text-ink">
+                          — No Dedicated Vehicle (Floating Driver Pool) —
+                        </span>
+                      </div>
+                      {!formData.assignedVehicleId && (
+                        <Badge variant="neutral" className="text-[10.5px]">
+                          Selected
+                        </Badge>
+                      )}
+                    </button>
+
+                    {/* Filtered Vehicle Options */}
+                    {filteredVehicles.length === 0 ? (
+                      <div className="text-center py-6 text-slate text-xs space-y-1">
+                        <p className="m-0 font-medium">
+                          No vehicles found matching "{vehicleSearch}"
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVehicleSearch("");
+                            setVehicleFilter("all");
+                          }}
+                          className="text-amber underline text-[11.5px] cursor-pointer"
+                        >
+                          Clear search & show all vehicles
+                        </button>
+                      </div>
+                    ) : (
+                      filteredVehicles.map((v) => {
+                        const isSelected = formData.assignedVehicleId === v._id;
+
+                        return (
+                          <button
+                            key={v._id}
+                            type="button"
+                            onClick={() => handleChange("assignedVehicleId", v._id)}
+                            className={`w-full text-left p-2.5 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-all ${
+                              isSelected
+                                ? "bg-amber-soft/40 border border-amber font-bold text-ink shadow-sm"
+                                : "hover:bg-paper-raised text-ink border border-transparent"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span
+                                className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                  v.isAvailable
+                                    ? "bg-emerald-500 ring-2 ring-emerald-500/20"
+                                    : "bg-amber ring-2 ring-amber/20"
+                                }`}
+                              />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-bold text-[13.5px] text-ink">
+                                    {v.vehicleNo}
+                                  </span>
+                                  {v.type && (
+                                    <span className="text-[11.5px] text-slate font-medium">
+                                      {v.type}
+                                    </span>
+                                  )}
+                                  {v.capacity && (
+                                    <span className="text-[11px] text-slate-soft font-mono">
+                                      • {v.capacity}
+                                    </span>
+                                  )}
+                                </div>
+                                {v.ownerName && (
+                                  <div className="text-[11px] text-slate-soft">
+                                    Owner: {v.ownerName}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                              {v.isCurrentDriverVehicle ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                                  <Check className="w-3 h-3" />
+                                  <span>Currently Assigned</span>
+                                </span>
+                              ) : v.isAvailable ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                  <span>🟢 Free to Assign</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-semibold bg-amber/15 text-amber-dark border border-amber/30">
+                                  <Lock className="w-3 h-3" />
+                                  <span>Assigned to {v.assignedDriverInfo?.name}</span>
+                                </span>
+                              )}
+
+                              {isSelected && (
+                                <Badge variant="ok" className="text-[10px] px-1.5 py-0.5">
+                                  Selected
+                                </Badge>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
 
                 {/* Selected Vehicle Context Card */}
                 {selectedVehicleObj ? (
