@@ -17,12 +17,14 @@ export const DriversPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedDriver, setSelectedDriver] = useState(null);
+  const [modalSection, setModalSection] = useState("personal");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const toast = useToast();
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const [dList, vList] = await Promise.all([
         driverService.getAll(),
@@ -56,13 +58,15 @@ export const DriversPage = () => {
     });
   }, [drivers, searchQuery]);
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (section = "personal") => {
     setSelectedDriver(null);
+    setModalSection(section);
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (drv) => {
+  const handleOpenEdit = (drv, section = "personal") => {
     setSelectedDriver(drv);
+    setModalSection(section);
     setIsModalOpen(true);
   };
 
@@ -199,14 +203,25 @@ export const DriversPage = () => {
                       </td>
                       <td>
                         {veh ? (
-                          <div className="inline-flex items-center gap-1.5 font-mono text-[12.5px] font-semibold text-ink px-2 py-0.5 bg-paper-subtle rounded border border-line">
-                            <Truck className="w-3.5 h-3.5 text-slate" />
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(d, "employment")}
+                            className="inline-flex items-center gap-1.5 font-mono text-[12.5px] font-semibold text-ink px-2 py-0.5 bg-paper-subtle hover:bg-paper-raised rounded border border-line transition-all cursor-pointer group text-left"
+                            title="Click to view or change vehicle assignment"
+                          >
+                            <Truck className="w-3.5 h-3.5 text-slate group-hover:text-amber transition-colors" />
                             <span>{veh.vehicleNo || veh}</span>
-                          </div>
+                          </button>
                         ) : (
-                          <span className="text-slate-soft text-[12px] italic">
-                            Unassigned
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(d, "employment")}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-[11.5px] font-medium text-amber-dark bg-amber-soft/40 hover:bg-amber-soft border border-amber/30 rounded transition-all cursor-pointer"
+                            title="Click to assign vehicle to this driver"
+                          >
+                            <Truck className="w-3.5 h-3.5 text-amber" />
+                            <span>+ Assign Vehicle</span>
+                          </button>
                         )}
                       </td>
                       <td>
@@ -229,7 +244,7 @@ export const DriversPage = () => {
                       <td className="text-right">
                         <button
                           type="button"
-                          onClick={() => handleOpenEdit(d)}
+                          onClick={() => handleOpenEdit(d, "personal")}
                           className="btn btn-sm"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -254,6 +269,7 @@ export const DriversPage = () => {
         onDelete={() => setDeleteTargetId(selectedDriver?._id)}
         vehicleList={vehicles}
         driverList={drivers}
+        initialSection={modalSection}
       />
 
       {/* Delete Confirmation */}

@@ -25,8 +25,9 @@ export const DriverModal = ({
   onDelete,
   vehicleList = [],
   driverList = [],
+  initialSection = "personal",
 }) => {
-  const [activeSection, setActiveSection] = useState("personal");
+  const [activeSection, setActiveSection] = useState(initialSection || "personal");
   const [formData, setFormData] = useState({
     name: "",
     driverId: "",
@@ -81,9 +82,9 @@ export const DriverModal = ({
     setForceReassign(false);
     setVehicleFilter("all");
     setVehicleSearch("");
-    setActiveSection("personal");
+    setActiveSection(initialSection || "personal");
     setError("");
-  }, [driver, isOpen]);
+  }, [driver, isOpen, initialSection]);
 
   // Compute live vehicle assignment statuses
   const processedVehicles = useMemo(() => {
