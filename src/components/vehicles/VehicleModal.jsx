@@ -3,6 +3,7 @@ import FullScreenModal from "../ui/FullScreenModal.jsx";
 import Badge from "../ui/Badge.jsx";
 import { daysUntil, docBadgeStatus, fmtD } from "../../utils/dates.js";
 import { formatVehicleStatus, getVehicleStatusBadgeVariant } from "../../utils/formatters.js";
+import { vehicleService } from "../../services/vehicleService.js";
 import {
   Plus,
   Trash2,
@@ -16,6 +17,7 @@ export const VehicleModal = ({
   vehicle,
   onSave,
   onDelete,
+  onRecordChange, // (updatedVehicle) => void  — called after sub-doc add/remove
 }) => {
   const [activeSection, setActiveSection] = useState("details");
   const [formData, setFormData] = useState({
@@ -97,52 +99,136 @@ export const VehicleModal = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddService = () => {
+  const handleAddService = async () => {
     if (!newService.date || !newService.description.trim()) return;
-    setFormData((prev) => ({
-      ...prev,
-      serviceHistory: [
-        { date: newService.date, description: newService.description.trim() },
-        ...prev.serviceHistory,
-      ],
-    }));
-    setNewService({ date: "", description: "" });
+
+    if (isEdit) {
+      // ── Edit mode: persist immediately via dedicated endpoint ──
+      setLoading(true);
+      setError("");
+      try {
+        const updated = await vehicleService.addServiceRecord(vehicle._id, {
+          date: newService.date,
+          description: newService.description.trim(),
+        });
+        setFormData((prev) => ({
+          ...prev,
+          serviceHistory: updated.serviceHistory || [],
+        }));
+        setNewService({ date: "", description: "" });
+        if (onRecordChange) onRecordChange(updated);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to save service record");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // ── Create mode: buffer in local state until main form is submitted ──
+      setFormData((prev) => ({
+        ...prev,
+        serviceHistory: [
+          { date: newService.date, description: newService.description.trim() },
+          ...prev.serviceHistory,
+        ],
+      }));
+      setNewService({ date: "", description: "" });
+    }
   };
 
-  const handleRemoveService = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      serviceHistory: prev.serviceHistory.filter((_, i) => i !== index),
-    }));
+  const handleRemoveService = async (index) => {
+    if (isEdit) {
+      // ── Edit mode: delete via dedicated endpoint using the record _id ──
+      const record = formData.serviceHistory[index];
+      if (!record?._id) return;
+      setLoading(true);
+      setError("");
+      try {
+        const updated = await vehicleService.removeServiceRecord(vehicle._id, record._id);
+        setFormData((prev) => ({
+          ...prev,
+          serviceHistory: updated.serviceHistory || [],
+        }));
+        if (onRecordChange) onRecordChange(updated);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to remove service record");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        serviceHistory: prev.serviceHistory.filter((_, i) => i !== index),
+      }));
+    }
   };
 
-  const handleAddAccident = () => {
+  const handleAddAccident = async () => {
     if (!newAccident.date || !newAccident.description.trim()) return;
-    setFormData((prev) => ({
-      ...prev,
-      accidentReports: [
-        {
+
+    if (isEdit) {
+      // ── Edit mode: persist immediately via dedicated endpoint ──
+      setLoading(true);
+      setError("");
+      try {
+        const updated = await vehicleService.addAccidentReport(vehicle._id, {
           date: newAccident.date,
           description: newAccident.description.trim(),
           driverName: (newAccident.driverName || "").trim(),
           driverMobile: (newAccident.driverMobile || "").trim(),
-        },
-        ...prev.accidentReports,
-      ],
-    }));
-    setNewAccident({
-      date: "",
-      description: "",
-      driverName: "",
-      driverMobile: "",
-    });
+        });
+        setFormData((prev) => ({
+          ...prev,
+          accidentReports: updated.accidentReports || [],
+        }));
+        setNewAccident({ date: "", description: "", driverName: "", driverMobile: "" });
+        if (onRecordChange) onRecordChange(updated);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to save accident report");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // ── Create mode: buffer in local state ──
+      setFormData((prev) => ({
+        ...prev,
+        accidentReports: [
+          {
+            date: newAccident.date,
+            description: newAccident.description.trim(),
+            driverName: (newAccident.driverName || "").trim(),
+            driverMobile: (newAccident.driverMobile || "").trim(),
+          },
+          ...prev.accidentReports,
+        ],
+      }));
+      setNewAccident({ date: "", description: "", driverName: "", driverMobile: "" });
+    }
   };
 
-  const handleRemoveAccident = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      accidentReports: prev.accidentReports.filter((_, i) => i !== index),
-    }));
+  const handleRemoveAccident = async (index) => {
+    if (isEdit) {
+      const report = formData.accidentReports[index];
+      if (!report?._id) return;
+      setLoading(true);
+      setError("");
+      try {
+        const updated = await vehicleService.removeAccidentReport(vehicle._id, report._id);
+        setFormData((prev) => ({
+          ...prev,
+          accidentReports: updated.accidentReports || [],
+        }));
+        if (onRecordChange) onRecordChange(updated);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to remove accident report");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        accidentReports: prev.accidentReports.filter((_, i) => i !== index),
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -157,7 +243,14 @@ export const VehicleModal = ({
     setError("");
 
     try {
-      await onSave(formData);
+      // In edit mode, serviceHistory & accidentReports are managed by their
+      // own dedicated endpoints — strip them from the main PATCH payload to
+      // avoid accidental overwrites.
+      const payload = isEdit
+        ? (({ serviceHistory, accidentReports, ...rest }) => rest)(formData)
+        : formData;
+
+      await onSave(payload);
       onClose();
     } catch (err) {
       setError(

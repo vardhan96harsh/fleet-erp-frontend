@@ -123,6 +123,17 @@ export const VehiclesPage = ({ preOpenId }) => {
     }
   };
 
+  // Called by VehicleModal after a service record or accident report is
+  // added / removed. Updates only the affected vehicle in the list so all
+  // other vehicles remain completely untouched.
+  const handleRecordChange = (updatedVehicle) => {
+    setVehicles((prev) =>
+      prev.map((v) => (v._id === updatedVehicle._id ? updatedVehicle : v))
+    );
+    // Keep selectedVehicle in sync so the modal reflects the latest data.
+    setSelectedVehicle(updatedVehicle);
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -426,6 +437,7 @@ export const VehiclesPage = ({ preOpenId }) => {
         onSave={handleSave}
         onDelete={() => setDeleteTargetId(selectedVehicle?._id)}
         driverList={drivers}
+        onRecordChange={handleRecordChange}
       />
 
       {/* Soft Delete Confirmation Dialog */}
