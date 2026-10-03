@@ -30,4 +30,10 @@ export const userService = {
     const res = await api.patch(`/users/${id}/reset-password`, { password });
     return res.data.data;
   },
+
+  async delete(id) {
+    const res = await api.delete(`/users/${id}`);
+    return res.data.data;
+  },
 };
+

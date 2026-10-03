@@ -3,10 +3,11 @@ import { userService } from "../services/userService.js";
 import { useToast } from "../context/ToastContext.jsx";
 import { Badge } from "../components/ui/Badge.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog.jsx";
 import { CreateUserModal } from "../components/users/CreateUserModal.jsx";
 import { ResetPasswordModal } from "../components/users/ResetPasswordModal.jsx";
 import { fmtDT } from "../utils/dates.js";
-import { UserPlus, ShieldCheck, KeyRound, Power } from "lucide-react";
+import { UserPlus, ShieldCheck, KeyRound, Power, Trash2 } from "lucide-react";
 
 export const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -14,6 +15,8 @@ export const UsersPage = () => {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [resetTargetUser, setResetTargetUser] = useState(null);
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const toast = useToast();
 
@@ -56,6 +59,21 @@ export const UsersPage = () => {
   const handleResetPassword = async (userId, newPassword) => {
     await userService.resetPassword(userId, newPassword);
     toast.success("Password reset successfully");
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteTargetUser) return;
+    setDeleteLoading(true);
+    try {
+      await userService.delete(deleteTargetUser._id);
+      setUsers((prev) => prev.filter((u) => u._id !== deleteTargetUser._id));
+      toast.success(`Sub Admin @${deleteTargetUser.username} deleted successfully`);
+      setDeleteTargetUser(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete Sub Admin");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -161,6 +179,16 @@ export const UsersPage = () => {
                         <Power className="w-3.5 h-3.5" />
                         <span>{u.isActive ? "Disable" : "Enable"}</span>
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTargetUser(u)}
+                        className="btn btn-sm btn-danger"
+                        title="Delete Sub Admin"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -183,6 +211,18 @@ export const UsersPage = () => {
         onClose={() => setResetTargetUser(null)}
         targetUser={resetTargetUser}
         onReset={handleResetPassword}
+      />
+
+      {/* Delete User Confirmation */}
+      <ConfirmDialog
+        isOpen={!!deleteTargetUser}
+        onClose={() => setDeleteTargetUser(null)}
+        onConfirm={handleDeleteUser}
+        title="Delete Sub Admin Account"
+        message={`Are you sure you want to permanently delete @${deleteTargetUser?.username} (${deleteTargetUser?.name})? All vehicles, drivers, inventory, and attendance records will remain completely safe and untouched.`}
+        confirmText="Delete Account"
+        confirmVariant="danger"
+        loading={deleteLoading}
       />
     </div>
   );
